@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base ─────────────────────────────────────────── */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  @apply bg-dark-bg text-white font-sans;
+  overscroll-behavior: none;
+}
+
+/* ── Scrollbar ────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-white/10 rounded-full; }
+
+/* ── Glass Card ────────────────────────────────────── */
+@layer components {
+  .glass-card {
+    @apply bg-white/[0.04] backdrop-blur-xl border border-white/[0.07]
+           rounded-2xl shadow-glass;
+  }
+
+  .btn-primary {
+    @apply bg-brand-gradient text-white font-semibold px-4 py-2.5
+           rounded-xl transition-all duration-200
+           hover:opacity-90 hover:scale-[1.02] active:scale-95
+           shadow-brand;
+  }
+
+  .btn-secondary {
+    @apply bg-white/[0.06] border border-white/10 text-white/80 font-medium
+           px-4 py-2.5 rounded-xl transition-all duration-200
+           hover:bg-white/10 hover:text-white active:scale-95;
+  }
+
+  .input-field {
+    @apply w-full bg-white/[0.05] border border-white/10 rounded-xl
+           px-4 py-3 text-white placeholder-white/30
+           focus:outline-none focus:border-brand/60 focus:bg-white/[0.08]
+           transition-all duration-200;
+  }
+
+  .section-title {
+    @apply text-base font-semibold text-white;
+  }
+
+  .page-container {
+    @apply min-h-screen bg-dark-bg pb-24;
+  }
+}
+
+/* ── Shimmer ────────────────────────────────────────── */
+.shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.5s linear infinite;
+}
+
+/* ── Wallet card noise texture overlay ──────────────── */
+.wallet-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  border-radius: inherit;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* ── Horizontal scroll hide scrollbar ───────────────── */
+.scroll-x-hidden {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.scroll-x-hidden::-webkit-scrollbar { display: none; }
