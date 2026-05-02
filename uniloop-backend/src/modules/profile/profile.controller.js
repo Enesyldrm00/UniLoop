@@ -2,30 +2,15 @@ const pool     = require('../../config/db');
 const AppError = require('../../utils/AppError');
 
 // ── Credibility Score hesaplama yardımcısı ─────────────────
-const calculateCredibilityScore = ({ gpa, certifications, achievements, rating_average, rating_count }) => {
-  let score = 0;
-
-  // GPA puanı (maks 30)
-  if (gpa !== null && gpa !== undefined) {
-    if (gpa >= 3.0)       score += 30;
-    else if (gpa >= 2.5)  score += 15;
-  }
-
-  // Sertifika puanı (her biri +10, maks 30)
-  const certCount = Array.isArray(certifications) ? certifications.length : 0;
-  score += Math.min(certCount * 10, 30);
-
-  // Başarı puanı (her biri +5, maks 20)
-  const achvCount = Array.isArray(achievements) ? achievements.length : 0;
-  score += Math.min(achvCount * 5, 20);
-
-  // Rating puanı (maks 20)
-  if (rating_count > 0) {
-    if (rating_average >= 4.5)      score += 20;
-    else if (rating_average >= 4.0) score += 10;
-  }
-
-  return Math.min(score, 100);
+// Formül (toplam 100 puan):
+//   ⭐ Yıldız ortalaması (0-5)  → 0-60 puan
+//   👥 Puan veren kişi sayısı  → 0-30 puan  (her kişi +3, maks 10 kişi)
+//   🎓 GPA (0.0-4.0)           → 0-10 puan
+const calculateCredibilityScore = ({ gpa, rating_average, rating_count }) => {
+  const ratingScore = Math.round((parseFloat(rating_average) || 0) / 5 * 60);
+  const countScore  = Math.min((parseInt(rating_count, 10) || 0) * 3, 30);
+  const gpaScore    = gpa ? Math.round((parseFloat(gpa) / 4.0) * 10) : 0;
+  return Math.min(ratingScore + countScore + gpaScore, 100);
 };
 
 // ── GET /api/profile/:userId ───────────────────────────────
@@ -71,8 +56,6 @@ const updateMyProfile = async (req, res, next) => {
     const row = current.rows[0] || {};
     const newScore = calculateCredibilityScore({
       gpa:            gpa ?? row.gpa,
-      certifications: row.certifications || [],
-      achievements:   row.achievements   || [],
       rating_average: row.rating_average || 0,
       rating_count:   row.rating_count   || 0,
     });
@@ -91,48 +74,6 @@ const updateMyProfile = async (req, res, next) => {
     );
 
     res.json({ success: true, profile: result.rows[0] });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ── POST /api/profile/me/certifications ───────────────────
-const addCertification = async (req, res, next) => {
-  const { title, issuer, year } = req.body;
-  if (!title || !issuer) {
-    return next(new AppError('Sertifika başlığı ve veren kurum zorunludur.', 400));
-  }
-
-  const userId = req.user.id;
-
-  try {
-    const current = await pool.query(
-      `SELECT p.certifications, p.achievements,
-              u.rating_average, u.rating_count, p.gpa
-       FROM user_profiles p JOIN users u ON u.id = p.user_id
-       WHERE p.user_id = $1`,
-      [userId]
-    );
-
-    const row  = current.rows[0];
-    const certs = [...(row.certifications || []), { title, issuer, year }];
-    const newScore = calculateCredibilityScore({
-      gpa:            row.gpa,
-      certifications: certs,
-      achievements:   row.achievements || [],
-      rating_average: row.rating_average || 0,
-      rating_count:   row.rating_count   || 0,
-    });
-
-    const result = await pool.query(
-      `UPDATE user_profiles
-       SET certifications = $1::jsonb, credibility_score = $2, updated_at = CURRENT_TIMESTAMP
-       WHERE user_id = $3
-       RETURNING certifications, credibility_score`,
-      [JSON.stringify(certs), newScore, userId]
-    );
-
-    res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     next(err);
   }
@@ -160,8 +101,6 @@ const addAchievement = async (req, res, next) => {
     const achvs = [...(row.achievements || []), { title, year }];
     const newScore = calculateCredibilityScore({
       gpa:            row.gpa,
-      certifications: row.certifications || [],
-      achievements:   achvs,
       rating_average: row.rating_average || 0,
       rating_count:   row.rating_count   || 0,
     });
@@ -180,4 +119,62 @@ const addAchievement = async (req, res, next) => {
   }
 };
 
-module.exports = { getProfile, updateMyProfile, addCertification, addAchievement };
+// ── GET /api/profile/:userId/reviews ───────────────────────
+// Kullanıcıya yapılan değerlendirmeleri döndürür.
+// Güvenlik: değerlendiren kişinin adının ilk 3 harfi görünür, kalanı *** ile sansülenir.
+const getUserReviews = async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      `SELECT
+         r.rating,
+         r.comment,
+         r.created_at,
+         u.full_name AS reviewer_full_name
+       FROM reviews r
+       JOIN users u ON u.id = r.reviewer_id
+       WHERE r.reviewee_id = $1
+       ORDER BY r.created_at DESC`,
+      [req.params.userId]
+    );
+
+    // İlk 3 harf + sansür
+    const reviews = result.rows.map(row => ({
+      rating:     row.rating,
+      comment:    row.comment,
+      created_at: row.created_at,
+      reviewer_name: row.reviewer_full_name.length > 3
+        ? row.reviewer_full_name.slice(0, 3) + '*'.repeat(row.reviewer_full_name.length - 3)
+        : row.reviewer_full_name,
+    }));
+
+    res.json({ success: true, reviews });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ── GET /api/profile/:userId/tasks ─────────────────────────
+// Kullanıcının açık (open) ilanlarını döndürür.
+const getUserTasks = async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      `SELECT
+         t.id, t.title, t.description, t.task_type, t.status,
+         t.reward_kredi, t.location, t.from_location, t.to_location,
+         t.created_at,
+         u.full_name AS creator_name,
+         u.rating_average, u.rating_count
+       FROM tasks t
+       JOIN users u ON u.id = t.creator_id
+       WHERE t.creator_id = $1 AND t.status = 'open'
+       ORDER BY t.created_at DESC`,
+      [req.params.userId]
+    );
+
+    res.json({ success: true, tasks: result.rows });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { getProfile, updateMyProfile, addAchievement, getUserReviews, getUserTasks };

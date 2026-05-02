@@ -1,4 +1,4 @@
-const pool     = require('../../config/db');
+const pool = require('../../config/db');
 const AppError = require('../../utils/AppError');
 
 // ── Credibility çarpanı ────────────────────────────────────
@@ -19,8 +19,10 @@ const getTasks = async (req, res, next) => {
       SELECT
         t.id, t.title, t.description, t.task_type, t.status,
         t.reward_kredi, t.location, t.from_location, t.to_location,
+        t.creator_id,
         t.is_auto_generated, t.created_at, t.expires_at,
         u.full_name AS creator_name,
+        u.rating_average, u.rating_count,
         p.credibility_score,
         ROUND(t.reward_kredi * (
           CASE
@@ -100,11 +102,19 @@ const createTask = async (req, res, next) => {
 };
 
 // ── PATCH /api/tasks/:id/assign ────────────────────────────
-// Görevi üstlenme + Escrow kilitleme (ACID)
+// Görevi üstlenme + Escrow oluşturma (ACID)
+//
+// Bu aşamada PARA HAREKETI OLMAZ — sadece escrow kaydı oluşturulur.
+// Gerçek KP transferi her iki taraf onayladığında (approveEscrow) yapılır.
+//
+// Para akışı (task_type'a göre):
+//  skill_exchange : taker öder (buyer), creator kazanır (seller)
+//  courier_offer  : taker öder (buyer), creator kazanır (seller)
+//  courier_request: creator öder (buyer), taker kazanır (seller)
 const assignTask = async (req, res, next) => {
-  const taskId   = parseInt(req.params.id, 10);
-  const sellerId = req.user.id; // Görevi yapacak kişi
-  const client   = await pool.connect();
+  const taskId = parseInt(req.params.id, 10);
+  const takerId = parseInt(req.user.id, 10); // İlanı kabul eden kişi
+  const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
@@ -121,20 +131,132 @@ const assignTask = async (req, res, next) => {
     }
 
     const task = taskResult.rows[0];
+    // DB'den gelen ID'ler string olabilir — tip güvenli karşılaştırma
+    const creatorId = parseInt(task.creator_id, 10);
 
     if (task.status !== 'open') {
       await client.query('ROLLBACK');
       return next(new AppError('Bu görev artık müsait değil.', 400));
     }
 
-    if (task.creator_id === sellerId) {
+    if (creatorId === takerId) {
       await client.query('ROLLBACK');
-      return next(new AppError('Kendi ilanınıza görev üstlenemezsiniz.', 400));
+      return next(new AppError('Kendi ilanınıza katılamazsınız.', 400));
     }
 
-    const buyerId = task.creator_id;
+    // ── Para akışı: görev türüne göre roller belirlenir ────────
+    // buyer  = parayı ödeyen (escrow'a kilitlenen)
+    // seller = parayı alacak olan (escrow serbest kalınca kazanan)
+    //
+    //  skill_exchange : İlanı açan yeteneğini sunar → taker öder, creator kazanır
+    //  courier_offer  : Kurye hizmetini sunar        → taker öder, creator kazanır
+    //  courier_request: Taşıma talep eder            → creator öder, taker kazanır
+    let buyerId, sellerId;
+    if (task.task_type === 'courier_request') {
+      buyerId = creatorId;  // hizmeti talep eden ilan sahibi öder
+      sellerId = takerId;    // kurye/hizmeti veren kazanır
+    } else {
+      // skill_exchange ve courier_offer: ilan sahibi hizmeti sunar, kabul eden öder
+      buyerId = takerId;    // hizmeti satın alan öder
+      sellerId = creatorId;  // hizmeti sunan ilan sahibi kazanır
+    }
 
-    // Alıcının cüzdanını kilitle
+    // ── OTOMATİK KURYE İLANI — Anlık Ödeme ─────────────────────
+    // Trigger'dan gelen ilanlar için SYSTEM zaten parayı kilitledi ve
+    // buyer_approved = TRUE. Ön-escrow yoksa (eski ilanlar) SYSTEM
+    // cüzdanından anlık olarak oluşturulur ve direkt ödenir.
+    if (task.is_auto_generated) {
+      const SYSTEM_ID = parseInt(process.env.SYSTEM_USER_ID || '1', 10);
+      const amount    = parseInt(task.reward_kredi, 10);
+
+      // Mevcut escrow'u kontrol et (trigger tarafından oluşturulmuş olabilir)
+      const existingEscrow = await client.query(
+        'SELECT * FROM escrows WHERE task_id = $1 FOR UPDATE',
+        [taskId]
+      );
+
+      if (existingEscrow.rows.length === 0) {
+        // Ön-escrow yok (eski ilan veya seed) → SYSTEM cüzdanından anlık oluştur
+        const sysWallet = await client.query(
+          'SELECT id, balance FROM wallets WHERE user_id = $1 FOR UPDATE',
+          [SYSTEM_ID]
+        );
+
+        if (sysWallet.rows.length === 0 || sysWallet.rows[0].balance < amount) {
+          await client.query('ROLLBACK');
+          return next(new AppError(
+            `SYSTEM bakiyesi yetersiz. Gerekli: ${amount} KP, Mevcut: ${sysWallet.rows[0]?.balance ?? 0} KP`,
+            400
+          ));
+        }
+
+        // SYSTEM cüzdanından düş
+        await client.query(
+          'UPDATE wallets SET balance = balance - $1 WHERE id = $2',
+          [amount, sysWallet.rows[0].id]
+        );
+
+        // Anlık tamamlanmış escrow oluştur
+        await client.query(
+          `INSERT INTO escrows
+             (task_id, buyer_id, seller_id, amount, status,
+              buyer_approved, seller_approved, released_at)
+           VALUES ($1, $2, $3, $4, 'released', TRUE, TRUE, NOW())`,
+          [taskId, SYSTEM_ID, takerId, amount]
+        );
+      } else {
+        // Mevcut escrow'u tamamlandı olarak güncelle
+        await client.query(
+          `UPDATE escrows
+           SET seller_id       = $1,
+               seller_approved = TRUE,
+               status          = 'released',
+               released_at     = NOW()
+           WHERE task_id = $2`,
+          [takerId, taskId]
+        );
+      }
+
+      // Kuryenin cüzdanına KP ekle
+      const courierWallet = await client.query(
+        'SELECT id FROM wallets WHERE user_id = $1',
+        [takerId]
+      );
+
+      if (courierWallet.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return next(new AppError('Kurye cüzdanı bulunamadı.', 404));
+      }
+
+      await client.query(
+        'UPDATE wallets SET balance = balance + $1 WHERE id = $2',
+        [amount, courierWallet.rows[0].id]
+      );
+
+      // İşlem kaydı
+      await client.query(
+        `INSERT INTO transactions (wallet_id, amount, type, description, related_task_id)
+         VALUES ($1, $2, 'escrow_release', 'Ortak sepet kurye görevi tamamlandı — ödeme anında yapıldı! 🚚', $3)`,
+        [courierWallet.rows[0].id, amount, taskId]
+      );
+
+      // Görevi tamamlandı olarak işaretle
+      await client.query(
+        `UPDATE tasks SET status = 'completed', assignee_id = $1 WHERE id = $2`,
+        [takerId, taskId]
+      );
+
+      await client.query('COMMIT');
+
+      return res.json({
+        success:     true,
+        auto_paid:   true,
+        message:     `Kurye görevi kabul edildi! ${amount} KP anında cüzdanınıza yatırıldı. 🚚`,
+        paid_amount: amount,
+      });
+    }
+
+    // ── NORMAL İLAN: Ön bakiye kontrolü ────────────────────────
     const walletResult = await client.query(
       'SELECT id, balance FROM wallets WHERE user_id = $1 FOR UPDATE',
       [buyerId]
@@ -142,23 +264,21 @@ const assignTask = async (req, res, next) => {
 
     if (walletResult.rows.length === 0) {
       await client.query('ROLLBACK');
-      return next(new AppError('İlan sahibinin cüzdanı bulunamadı.', 404));
+      return next(new AppError('Ödeme yapacak kişinin cüzdanı bulunamadı.', 404));
     }
 
     const wallet = walletResult.rows[0];
 
     if (wallet.balance < task.reward_kredi) {
       await client.query('ROLLBACK');
-      return next(new AppError('İlan sahibinin bakiyesi yetersiz.', 400));
+      const who = task.task_type === 'courier_request' ? 'İlan sahibinin bakiyesi' : 'Bakiyeniz';
+      return next(new AppError(
+        `${who} yetersiz. Gerekli: ${task.reward_kredi} KP, Mevcut: ${wallet.balance} KP`,
+        400
+      ));
     }
 
-    // Alıcıdan parayı düş (escrow'a kilitlendi)
-    await client.query(
-      'UPDATE wallets SET balance = balance - $1 WHERE id = $2',
-      [task.reward_kredi, wallet.id]
-    );
-
-    // Escrow kaydı oluştur
+    // Yeni escrow oluştur (para onayda düşülecek)
     const escrowResult = await client.query(
       `INSERT INTO escrows (task_id, buyer_id, seller_id, amount, status)
        VALUES ($1, $2, $3, $4, 'locked')
@@ -166,24 +286,17 @@ const assignTask = async (req, res, next) => {
       [taskId, buyerId, sellerId, task.reward_kredi]
     );
 
-    // İşlem kaydı (alıcı için)
-    await client.query(
-      `INSERT INTO transactions (wallet_id, amount, type, description, related_task_id)
-       VALUES ($1, $2, 'escrow_lock', $3, $4)`,
-      [wallet.id, -task.reward_kredi, `"${task.title}" görevi için emanete kilitlendi`, taskId]
-    );
-
     // Görevi güncelle
     await client.query(
       `UPDATE tasks SET status = 'in_escrow', assignee_id = $1 WHERE id = $2`,
-      [sellerId, taskId]
+      [takerId, taskId]
     );
 
     await client.query('COMMIT');
 
     res.json({
       success: true,
-      message: 'Görev başarıyla üstlenildi. Ödeme emanete alındı.',
+      message: 'İlan başarıyla kabul edildi. Ödeme emanete alındı.',
       escrow:  escrowResult.rows[0],
     });
   } catch (err) {
@@ -229,6 +342,22 @@ const createReview = async (req, res, next) => {
          )
        WHERE id = $2`,
       [rating, reviewee_id]
+    );
+
+    // Credibility score'u yeni formüle göre güncelle
+    // Formül: (rating_avg/5)*60 + min(rating_count*3,30) + (gpa/4)*10
+    await client.query(
+      `UPDATE user_profiles p
+       SET credibility_score = LEAST(
+         ROUND((u.rating_average / 5.0) * 60)
+         + LEAST(u.rating_count * 3, 30)
+         + COALESCE(ROUND((p.gpa / 4.0) * 10), 0),
+         100
+       ),
+       updated_at = CURRENT_TIMESTAMP
+       FROM users u
+       WHERE p.user_id = $1 AND u.id = $1`,
+      [reviewee_id]
     );
 
     await client.query('COMMIT');

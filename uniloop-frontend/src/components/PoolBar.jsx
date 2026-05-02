@@ -1,4 +1,6 @@
-import { Users, MapPin, ChevronRight } from 'lucide-react'
+import { useState } from 'react'
+import { Users, MapPin, ChevronRight, Loader, CheckCircle, AlertCircle, Truck } from 'lucide-react'
+import api from '../api/axios'
 
 const LOCATION_LABELS = {
   muhendislik:   'Mühendislik',
@@ -8,34 +10,61 @@ const LOCATION_LABELS = {
   kutuphane:     'Kütüphane',
 }
 
-// Doluluk oranına göre renk
 const getFillColor = (pct) => {
-  if (pct >= 80) return { bar: 'bg-emerald-400', text: 'text-emerald-400', glow: 'shadow-kredit' }
-  if (pct >= 50) return { bar: 'bg-amber-400',   text: 'text-amber-400',   glow: '' }
-  return              { bar: 'bg-white/30',       text: 'text-white/50',    glow: '' }
+  if (pct >= 100) return { bar: 'bg-emerald-500', text: 'text-emerald-600' }
+  if (pct >= 80)  return { bar: 'bg-emerald-400', text: 'text-emerald-600' }
+  if (pct >= 50)  return { bar: 'bg-amber-400',   text: 'text-amber-600'  }
+  return               { bar: 'bg-slate-200',     text: 'text-slate-400'  }
 }
 
 export default function PoolBar({ pool, onJoin }) {
-  const color = getFillColor(pool.fill_percentage)
+  const [joining,  setJoining]  = useState(false)
+  const [joined,   setJoined]   = useState(false)
+  const [error,    setError]    = useState('')
+  const [curPool,  setCurPool]  = useState(pool)
+
+  const isFull  = curPool.current_capacity >= curPool.max_capacity
+  const fillPct = Math.min(Math.round((curPool.current_capacity / curPool.max_capacity) * 100), 100)
+  const color   = getFillColor(fillPct)
+
+  const handleJoin = async (e) => {
+    e.stopPropagation()
+    if (joined || joining) return
+    setError('')
+    setJoining(true)
+    try {
+      const res = await api.post(`/pools/${curPool.id}/join`)
+      setJoined(true)
+      if (res.data.pool) {
+        const p = res.data.pool
+        setCurPool({
+          ...curPool,
+          current_capacity: p.current_capacity,
+          fill_percentage: Math.round((p.current_capacity / p.max_capacity) * 100),
+        })
+      }
+      onJoin?.(curPool)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Katılım başarısız.')
+    } finally {
+      setJoining(false)
+    }
+  }
 
   return (
-    <div
-      className="glass-card p-4 min-w-[220px] max-w-[220px] flex-shrink-0
-                 cursor-pointer hover:bg-white/[0.07] transition-all duration-200
-                 active:scale-[0.97] animate-fade-up"
-      onClick={() => onJoin?.(pool)}
-    >
+    <div className="bg-white border border-slate-200 rounded-xl p-4 min-w-[220px] max-w-[220px] flex-shrink-0
+                    transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-slate-300">
       {/* Başlık */}
-      <p className="text-sm font-semibold text-white leading-snug line-clamp-1 mb-1">
-        {pool.title}
+      <p className="text-sm font-semibold text-slate-900 leading-snug line-clamp-1 mb-1">
+        {curPool.title}
       </p>
 
       {/* Lokasyon */}
-      {pool.location && (
+      {curPool.location && (
         <div className="flex items-center gap-1 mb-3">
-          <MapPin size={11} className="text-white/40" />
-          <span className="text-[10px] text-white/40">
-            {LOCATION_LABELS[pool.location] || pool.location}
+          <MapPin size={11} className="text-slate-400" />
+          <span className="text-[10px] text-slate-400 font-medium">
+            {LOCATION_LABELS[curPool.location] || curPool.location}
           </span>
         </div>
       )}
@@ -43,34 +72,68 @@ export default function PoolBar({ pool, onJoin }) {
       {/* Progress Bar */}
       <div className="mb-2">
         <div className="flex justify-between items-center mb-1.5">
-          <div className="flex items-center gap-1 text-white/50">
+          <div className="flex items-center gap-1 text-slate-400">
             <Users size={11} />
             <span className="text-[11px]">
-              {pool.current_capacity}/{pool.max_capacity} kişi
+              {curPool.current_capacity}/{curPool.max_capacity} kişi
             </span>
           </div>
           <span className={`text-[11px] font-bold ${color.text}`}>
-            %{pool.fill_percentage}
+            %{fillPct}
           </span>
         </div>
-        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-500 ${color.bar}`}
-            style={{ width: `${pool.fill_percentage}%` }}
+            style={{ width: `${fillPct}%` }}
           />
         </div>
       </div>
 
-      {/* Kişi başı ücret */}
-      <div className="flex items-center justify-between mt-3">
-        <span className="text-[11px] text-white/40">Kişi başı</span>
-        <div className="flex items-center gap-1">
-          <span className="text-xs font-bold text-kredit">
-            {pool.cost_per_person} K₺
-          </span>
-          <ChevronRight size={12} className="text-white/30" />
+      {/* Sepet DOLU → Otomatik kurye ilanı banner */}
+      {isFull && (
+        <div className="flex items-center gap-2 mt-3 p-2.5 rounded-lg bg-emerald-50 border border-emerald-200">
+          <Truck size={13} className="text-emerald-600 flex-shrink-0" />
+          <div>
+            <p className="text-[10px] font-semibold text-emerald-700">Sepet Doldu!</p>
+            <p className="text-[9px] text-slate-400 leading-tight">Otomatik kurye ilanı oluşturuldu 🚚</p>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Kişi başı + Katıl Butonu */}
+      {!isFull && (
+        <div className="flex items-center justify-between mt-3 gap-2">
+          <div>
+            <span className="text-[10px] text-slate-400 font-medium">Kişi başı</span>
+            <p className="text-xs font-bold text-emerald-600">{curPool.cost_per_person} KP</p>
+          </div>
+          <button
+            onClick={handleJoin}
+            disabled={joining || joined || curPool.status !== 'open'}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200
+              ${joined
+                ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                : curPool.status !== 'open'
+                  ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                  : 'bg-slate-900 text-white hover:bg-slate-800 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0'
+              }`}
+          >
+            {joining  ? <Loader size={12} className="animate-spin" />
+            : joined   ? <><CheckCircle size={12} /> Katıldın</>
+            : curPool.status !== 'open' ? 'Dolu'
+            : <>Katıl <ChevronRight size={12} /></>}
+          </button>
+        </div>
+      )}
+
+      {/* Hata mesajı */}
+      {error && (
+        <div className="flex items-start gap-1 mt-2">
+          <AlertCircle size={11} className="text-red-400 flex-shrink-0 mt-0.5" />
+          <p className="text-[10px] text-red-500 leading-tight">{error}</p>
+        </div>
+      )}
     </div>
   )
 }

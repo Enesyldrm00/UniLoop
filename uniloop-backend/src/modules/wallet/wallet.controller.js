@@ -26,6 +26,7 @@ const getMyWallet = async (req, res, next) => {
 
     res.json({
       success: true,
+      user:         req.user,
       wallet:       walletResult.rows[0],
       transactions: txResult.rows,
     });

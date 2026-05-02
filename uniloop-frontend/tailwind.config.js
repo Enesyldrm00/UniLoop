@@ -8,63 +8,65 @@ export default {
       },
       colors: {
         dark: {
-          bg:      '#08080f',
-          card:    '#10101a',
-          surface: '#16162a',
-          hover:   '#1e1e35',
-          border:  'rgba(255,255,255,0.07)',
+          bg: '#f8fafc',      // slate-50
+          card: '#ffffff',    // pure white
+          surface: '#f1f5f9', // slate-100
+          hover: '#f1f5f9',   // slate-100
+          border: '#e2e8f0',  // slate-200
         },
         kredit: {
-          DEFAULT: '#10b981',
-          dark:    '#059669',
-          light:   '#34d399',
-          glow:    'rgba(16,185,129,0.3)',
+          DEFAULT: '#059669', // emerald-600
+          dark: '#047857',    // emerald-700
+          light: '#10b981',   // emerald-500
+          glow: 'rgba(5, 150, 105, 0.1)',
         },
         brand: {
-          DEFAULT: '#6366f1',
-          dark:    '#4f46e5',
-          light:   '#818cf8',
-          glow:    'rgba(99,102,241,0.4)',
+          DEFAULT: '#0f172a', // slate-900
+          dark: '#020617',    // slate-950
+          light: '#1e293b',   // slate-800
+          glow: 'rgba(15, 23, 42, 0.1)',
         },
       },
       backgroundImage: {
-        'wallet-gradient':  'linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%)',
-        'brand-gradient':   'linear-gradient(135deg, #6366f1, #8b5cf6)',
-        'kredit-gradient':  'linear-gradient(135deg, #10b981, #059669)',
-        'card-glass':       'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01))',
+        // Gradientleri dümdüz tok renklere çeviriyoruz (fintech stili)
+        'wallet-gradient': 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+        'brand-gradient': 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+        'kredit-gradient': 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+        'card-glass': 'none',
       },
       boxShadow: {
-        'glass':    '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
-        'brand':    '0 0 30px rgba(99,102,241,0.35)',
-        'kredit':   '0 0 20px rgba(16,185,129,0.25)',
-        'wallet':   '0 20px 60px rgba(79,70,229,0.4)',
+        // Hafif, temiz ve profesyonel gölgeler
+        'glass': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+        'brand': '0 4px 6px -1px rgba(15, 23, 42, 0.1)',
+        'kredit': '0 4px 6px -1px rgba(5, 150, 105, 0.1)',
+        'wallet': '0 10px 15px -3px rgba(0, 0, 0, 0.05)',
       },
       animation: {
-        'shimmer':      'shimmer 2.5s linear infinite',
-        'fade-up':      'fadeUp 0.4s ease-out',
-        'fade-in':      'fadeIn 0.3s ease-out',
-        'pulse-soft':   'pulseSoft 2s ease-in-out infinite',
-        'slide-up':     'slideUp 0.35s cubic-bezier(0.16,1,0.3,1)',
+        'shimmer': 'shimmer 2.5s linear infinite',
+        'fade-up': 'fadeUp 0.4s ease-out',
+        'fade-in': 'fadeIn 0.3s ease-out',
+        'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
+        'slide-up': 'slideUp 0.35s cubic-bezier(0.16,1,0.3,1)',
       },
       keyframes: {
         shimmer: {
-          '0%':   { backgroundPosition: '-200% 0' },
+          '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
         },
         fadeUp: {
-          '0%':   { opacity: '0', transform: 'translateY(16px)' },
+          '0%': { opacity: '0', transform: 'translateY(16px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         fadeIn: {
-          '0%':   { opacity: '0' },
+          '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
         pulseSoft: {
           '0%, 100%': { opacity: '1' },
-          '50%':      { opacity: '0.6' },
+          '50%': { opacity: '0.6' },
         },
         slideUp: {
-          '0%':   { opacity: '0', transform: 'translateY(40px)' },
+          '0%': { opacity: '0', transform: 'translateY(40px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },

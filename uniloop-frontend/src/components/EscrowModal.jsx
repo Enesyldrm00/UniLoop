@@ -3,11 +3,11 @@ import { ShieldCheck, Lock, CheckCircle2, Clock, X, AlertCircle } from 'lucide-r
 
 /*
   EscrowModal Props:
-    escrow    — mockEscrow verisi
+    escrow        — mockEscrow verisi
     currentUserId — giriş yapan kullanıcının id'si
-    onApprove — (escrowId) => void
-    onDispute — (escrowId) => void
-    onClose   — () => void
+    onApprove     — (escrowId) => void
+    onDispute     — (escrowId) => void
+    onClose       — () => void
 */
 export default function EscrowModal({ escrow, currentUserId, onApprove, onDispute, onClose }) {
   const [loading, setLoading]   = useState(false)
@@ -15,10 +15,10 @@ export default function EscrowModal({ escrow, currentUserId, onApprove, onDisput
 
   if (!escrow) return null
 
-  const isBuyer  = currentUserId === escrow.buyer_id
-  const isSeller = currentUserId === escrow.seller_id
+  const isBuyer  = parseInt(currentUserId, 10) === parseInt(escrow.buyer_id,  10)
+  const isSeller = parseInt(currentUserId, 10) === parseInt(escrow.seller_id, 10)
 
-  const myApproved = isBuyer ? escrow.buyer_approved : isSeller ? escrow.seller_approved : false
+  const myApproved    = isBuyer ? escrow.buyer_approved : isSeller ? escrow.seller_approved : false
   const otherApproved = isBuyer ? escrow.seller_approved : escrow.buyer_approved
 
   const bothApproved = escrow.buyer_approved && escrow.seller_approved
@@ -39,56 +39,51 @@ export default function EscrowModal({ escrow, currentUserId, onApprove, onDisput
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-md"
+        className="absolute inset-0 bg-slate-900/30"
         onClick={onClose}
       />
 
       {/* Modal Kartı */}
-      <div className="relative w-full max-w-sm glass-card p-6 animate-slide-up">
+      <div className="relative w-full max-w-sm bg-white border border-slate-200 rounded-2xl p-6 shadow-lg animate-slide-up">
         {/* Kapat */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center
-                     rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                     rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
         >
-          <X size={16} className="text-white/60" />
+          <X size={16} className="text-slate-400" />
         </button>
 
         {/* İkon */}
         <div className="flex justify-center mb-5">
-          <div className={`relative w-20 h-20 rounded-3xl flex items-center justify-center
-                          ${isReleased
-                            ? 'bg-kredit/20'
-                            : bothApproved
-                              ? 'bg-kredit/20'
-                              : 'bg-brand/20'
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center
+                          ${isReleased || bothApproved
+                            ? 'bg-emerald-50 border border-emerald-200'
+                            : 'bg-slate-100 border border-slate-200'
                           }`}>
             {isReleased || bothApproved ? (
-              <CheckCircle2 size={40} className="text-kredit" />
+              <CheckCircle2 size={32} className="text-emerald-600" />
             ) : (
-              <Lock size={40} className="text-brand-light" />
+              <Lock size={32} className="text-slate-600" />
             )}
-            {/* Pulse ring */}
-            <span className={`absolute inset-0 rounded-3xl animate-ping opacity-20
-                              ${isReleased ? 'bg-kredit' : 'bg-brand'}`} />
           </div>
         </div>
 
         {/* Başlık */}
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-1.5 mb-1">
-            <ShieldCheck size={14} className="text-brand-light" />
-            <span className="text-xs text-brand-light font-medium uppercase tracking-wider">
+            <ShieldCheck size={14} className="text-slate-400" />
+            <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">
               Güvenli Ödeme — Escrow
             </span>
           </div>
-          <h2 className="text-lg font-bold text-white mb-1 line-clamp-2">
+          <h2 className="text-lg font-bold text-slate-900 mb-1 line-clamp-2">
             {escrow.task_title}
           </h2>
-          <p className="text-2xl font-extrabold text-kredit">
-            {escrow.amount} K₺
+          <p className="text-2xl font-extrabold text-emerald-600">
+            {escrow.amount} KP
           </p>
-          <p className="text-xs text-white/40 mt-1">emanet hesapta kilitli</p>
+          <p className="text-xs text-slate-400 mt-1">emanet hesapta kilitli</p>
         </div>
 
         {/* Onay Durumları */}
@@ -107,13 +102,14 @@ export default function EscrowModal({ escrow, currentUserId, onApprove, onDisput
           />
         </div>
 
-        {/* Para Nasıl Serbest Kalır? */}
+        {/* Bilgi notu */}
         {!isReleased && !bothApproved && (
-          <div className="flex items-start gap-2 p-3 rounded-xl bg-white/[0.04] border border-white/[0.06] mb-5">
-            <AlertCircle size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-white/50 leading-relaxed">
-              Her iki taraf da onayladığında <span className="text-kredit font-medium">{escrow.amount} K₺</span> otomatik
-              olarak satıcıya aktarılır.
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200 mb-5">
+            <AlertCircle size={14} className="text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Her iki taraf da onayladığında{' '}
+              <span className="text-emerald-600 font-semibold">{escrow.amount} KP</span>{' '}
+              otomatik olarak satıcıya aktarılır.
             </p>
           </div>
         )}
@@ -121,13 +117,13 @@ export default function EscrowModal({ escrow, currentUserId, onApprove, onDisput
         {/* Butonlar */}
         {isReleased ? (
           <div className="text-center py-2">
-            <CheckCircle2 size={20} className="text-kredit mx-auto mb-1" />
-            <p className="text-sm font-semibold text-kredit">Ödeme Tamamlandı!</p>
+            <CheckCircle2 size={20} className="text-emerald-600 mx-auto mb-1" />
+            <p className="text-sm font-semibold text-emerald-600">Ödeme Tamamlandı!</p>
           </div>
         ) : disputed ? (
           <div className="text-center py-2">
-            <p className="text-sm text-amber-400 font-medium">Anlaşmazlık bildirildi.</p>
-            <p className="text-xs text-white/40 mt-1">Moderatör incelemesi başlatıldı.</p>
+            <p className="text-sm text-amber-600 font-semibold">Anlaşmazlık bildirildi.</p>
+            <p className="text-xs text-slate-400 mt-1">Moderatör incelemesi başlatıldı.</p>
           </div>
         ) : (
           <div className="space-y-2.5">
@@ -153,7 +149,7 @@ export default function EscrowModal({ escrow, currentUserId, onApprove, onDisput
             )}
 
             {myApproved && !bothApproved && (
-              <div className="flex items-center justify-center gap-2 py-3 text-white/50">
+              <div className="flex items-center justify-center gap-2 py-3 text-slate-400">
                 <Clock size={15} className="animate-pulse-soft" />
                 <span className="text-sm">
                   {otherApproved ? 'Her ikisi de onayladı...' : 'Diğer tarafın onayı bekleniyor'}
@@ -163,7 +159,7 @@ export default function EscrowModal({ escrow, currentUserId, onApprove, onDisput
 
             <button
               onClick={handleDispute}
-              className="w-full text-center text-xs text-white/30 hover:text-amber-400
+              className="w-full text-center text-xs text-slate-300 hover:text-amber-500
                          transition-colors py-1"
             >
               Sorun mu var? Anlaşmazlık bildir
@@ -179,29 +175,28 @@ function ApprovalRow({ label, role, approved, isMe }) {
   return (
     <div className={`flex items-center gap-3 p-3 rounded-xl border transition-colors
                      ${approved
-                       ? 'bg-kredit/10 border-kredit/20'
-                       : 'bg-white/[0.03] border-white/[0.06]'
+                       ? 'bg-emerald-50 border-emerald-200'
+                       : 'bg-slate-50 border-slate-200'
                      }`}>
-      <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0
-                       ${approved ? 'bg-kredit/20' : 'bg-white/10'}`}>
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                       ${approved ? 'bg-emerald-100' : 'bg-slate-100'}`}>
         {approved
-          ? <CheckCircle2 size={16} className="text-kredit" />
-          : <Clock size={16} className="text-white/40 animate-pulse-soft" />
+          ? <CheckCircle2 size={16} className="text-emerald-600" />
+          : <Clock size={16} className="text-slate-400 animate-pulse-soft" />
         }
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <p className="text-sm font-medium text-white truncate">{label}</p>
+          <p className="text-sm font-medium text-slate-900 truncate">{label}</p>
           {isMe && (
-            <span className="text-[9px] bg-brand/20 text-brand-light border border-brand/30
-                             px-1.5 py-0.5 rounded-md font-medium flex-shrink-0">
+            <span className="text-[9px] bg-slate-900 text-white px-1.5 py-0.5 rounded font-medium flex-shrink-0">
               Sen
             </span>
           )}
         </div>
-        <p className="text-[10px] text-white/40">{role}</p>
+        <p className="text-[10px] text-slate-400">{role}</p>
       </div>
-      <span className={`text-xs font-semibold flex-shrink-0 ${approved ? 'text-kredit' : 'text-white/30'}`}>
+      <span className={`text-xs font-semibold flex-shrink-0 ${approved ? 'text-emerald-600' : 'text-slate-300'}`}>
         {approved ? 'Onayladı ✓' : 'Bekliyor…'}
       </span>
     </div>

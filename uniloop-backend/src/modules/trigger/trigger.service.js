@@ -7,7 +7,7 @@
  * havuzla birlikte rollback edilir. Atomiklik garantilenir.
  */
 
-const SYSTEM_USER_ID    = parseInt(process.env.SYSTEM_USER_ID || '1', 10);
+const SYSTEM_USER_ID = parseInt(process.env.SYSTEM_USER_ID || '1', 10);
 const COURIER_REWARD_PCT = 0.10; // Havuz toplam maliyetinin %10'u
 
 /**
