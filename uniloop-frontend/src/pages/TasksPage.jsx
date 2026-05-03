@@ -251,14 +251,14 @@ function CreateTaskModal({ onClose, onCreated }) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-white/50 mb-1.5 block">Kalkış <span className="text-red-400">*</span></label>
-                  <select value={form.from_location} onChange={set('from_location')} className="input-field text-sm py-3 bg-dark-card">
+                  <select value={form.from_location} onChange={set('from_location')} className="input-field text-sm py-3">
                     <option value="">Seçin...</option>
                     {LOCATIONS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="text-xs text-white/50 mb-1.5 block">Varış <span className="text-red-400">*</span></label>
-                  <select value={form.to_location} onChange={set('to_location')} className="input-field text-sm py-3 bg-dark-card">
+                  <select value={form.to_location} onChange={set('to_location')} className="input-field text-sm py-3">
                     <option value="">Seçin...</option>
                     {LOCATIONS.filter(l => l.value !== form.from_location).map(l => (
                       <option key={l.value} value={l.value}>{l.label}</option>
@@ -269,7 +269,7 @@ function CreateTaskModal({ onClose, onCreated }) {
             ) : (
               <div>
                 <label className="text-xs text-white/50 mb-1.5 block">Lokasyon</label>
-                <select value={form.location} onChange={set('location')} className="input-field text-sm py-3 bg-dark-card">
+                <select value={form.location} onChange={set('location')} className="input-field text-sm py-3">
                   <option value="">📍 Tüm Kampüs</option>
                   {LOCATIONS.map(l => <option key={l.value} value={l.value}>📍 {l.label}</option>)}
                 </select>
@@ -283,7 +283,7 @@ function CreateTaskModal({ onClose, onCreated }) {
                   type="file"
                   accept="image/*"
                   onChange={(e) => setImageFile(e.target.files[0])}
-                  className="input-field text-sm py-2 px-3 bg-dark-card file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/20 file:text-indigo-300 hover:file:bg-indigo-500/30 transition-all cursor-pointer"
+                  className="input-field text-sm py-2 px-3 file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/20 file:text-indigo-300 hover:file:bg-indigo-500/30 transition-all cursor-pointer"
                 />
                 {imageFile && (
                   <p className="text-[10px] text-emerald-400 mt-1">Seçilen dosya: {imageFile.name}</p>

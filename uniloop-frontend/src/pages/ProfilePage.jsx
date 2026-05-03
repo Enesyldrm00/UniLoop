@@ -87,7 +87,7 @@ function ProfileEditSection({ profile, onSaved }) {
             {/* Sınıf */}
             <div>
               <label className="text-xs text-white/50 mb-1.5 block">Sınıf</label>
-              <select value={form.year_of_study} onChange={set('year_of_study')} className="input-field text-sm py-2.5 bg-dark-card">
+              <select value={form.year_of_study} onChange={set('year_of_study')} className="input-field text-sm py-2.5">
                 <option value="">Seçin...</option>
                 {[1,2,3,4,5,6].map(y => (
                   <option key={y} value={y}>{y}. Sınıf</option>
