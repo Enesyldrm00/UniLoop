@@ -43,7 +43,7 @@ function ChatScreen({ conversation, myId, onBack }) {
   }
 
   return (
-    <div className="page-container flex flex-col">
+    <div className="page-container flex flex-col relative">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-12 pb-3 border-b border-white/[0.07]">
         <button onClick={onBack} className="w-9 h-9 glass-card flex items-center justify-center">
@@ -86,22 +86,22 @@ function ChatScreen({ conversation, myId, onBack }) {
       </div>
 
       {/* Input */}
-      <div className="fixed bottom-16 inset-x-0 px-4 pb-3 bg-dark-bg/80 backdrop-blur-xl border-t border-white/[0.06]">
-        <div className="flex gap-2 pt-3">
+      <div className="absolute bottom-20 inset-x-4 z-40">
+        <div className="glass-card flex items-center gap-2 p-1.5 rounded-full shadow-2xl border border-white/10 bg-[#25304a]/80 backdrop-blur-md">
           <input
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && sendMsg()}
             placeholder="Mesaj yaz..."
-            className="input-field flex-1 py-2.5 text-sm"
+            className="flex-1 bg-transparent px-4 py-2 text-sm text-white outline-none placeholder:text-slate-400"
           />
           <button
             onClick={sendMsg}
             disabled={sending || !text.trim()}
-            className="btn-primary px-4 flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-10 h-10 rounded-full bg-teal-500 text-teal-950 flex items-center justify-center shadow-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-teal-400 transition-colors flex-shrink-0"
           >
-            {sending ? <Loader size={16} className="animate-spin" /> : <Send size={16} />}
+            {sending ? <Loader size={16} className="animate-spin" /> : <Send size={16} className="-ml-0.5" />}
           </button>
         </div>
       </div>
@@ -163,7 +163,7 @@ export default function MessagesPage() {
             <button
               key={`${conv.sender_id}-${conv.receiver_id}`}
               onClick={() => setActiveConv(conv)}
-              className="w-full glass-card p-4 flex items-center gap-3 hover:bg-white/[0.07] transition-all text-left"
+              className="w-full glass-card p-4 flex items-center gap-3 hover:bg-[#3b4b6e]/[0.07] transition-all text-left"
             >
               <div className="w-11 h-11 rounded-xl bg-brand-gradient flex items-center justify-center font-bold flex-shrink-0">
                 {conv.other_user_name?.[0]}

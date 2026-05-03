@@ -12,6 +12,7 @@ const taskRoutes    = require('./modules/task/task.routes');
 const escrowRoutes  = require('./modules/escrow/escrow.routes');
 const poolRoutes    = require('./modules/pool/pool.routes');
 const messageRoutes = require('./modules/message/message.routes');
+const eventRoutes   = require('./modules/event/event.routes');
 
 const app = express();
 
@@ -22,6 +23,10 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Statik dosya sunucusu (uploads klasörü için)
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // ── Sağlık Kontrolü ────────────────────────────────────────
 app.get('/health', (req, res) => {
@@ -37,6 +42,7 @@ app.use('/api/tasks',    taskRoutes);
 app.use('/api/escrow',   escrowRoutes);
 app.use('/api/pools',    poolRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/events',   eventRoutes);
 
 // ── 404 Yakalayıcı ──────────────────────────────────────────
 app.use((req, res) => {

@@ -44,7 +44,7 @@ function ProfileEditSection({ profile, onSaved }) {
     <div className="glass-card rounded-2xl overflow-hidden">
       <button
         onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
+        className="w-full flex items-center justify-between p-4 hover:bg-[#3b4b6e]/5 transition-colors"
       >
         <div className="flex items-center gap-2">
           <Edit3 size={15} className="text-brand-light" />
@@ -157,7 +157,7 @@ function ContactEditSection({ contact, onSaved }) {
       type="button"
       onClick={toggle(field)}
       className={`ml-auto text-[10px] px-2 py-0.5 rounded-lg border transition-colors
-        ${form[field] ? `${activeColor}` : 'bg-white/5 text-white/30 border-white/10'}`}
+        ${form[field] ? `${activeColor}` : 'bg-[#3b4b6e]/5 text-white/30 border-white/10'}`}
     >
       {form[field] ? '👁 Herkese Açık' : '🔒 Gizli'}
     </button>
@@ -326,7 +326,7 @@ export default function ProfilePage() {
                 {profile?.credibility_score || 0}/100
               </span>
             </div>
-            <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-[#3b4b6e]/10 rounded-full overflow-hidden">
               <div
                 className="h-full bg-brand-gradient rounded-full transition-all duration-700"
                 style={{ width: `${profile?.credibility_score || 0}%` }}

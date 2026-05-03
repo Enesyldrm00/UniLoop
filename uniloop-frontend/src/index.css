@@ -9,7 +9,9 @@
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 font-sans;
+  background-color: #4f638f;
+  color: #f8fafc;
+  font-family: ui-sans-serif, system-ui, sans-serif;
   overscroll-behavior: none;
 }
 
@@ -24,43 +26,64 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-400;
+  background: rgba(255, 255, 255, 0.35);
 }
 
-/* ── UI Components (Clean Fintech) ────────────────── */
+/* ── UI Components ────────────────────────────────── */
 @layer components {
 
-  /* Önceden glass-card olan sınıflar şimdi temiz, minimal beyaz kartlar */
+  /* Kart — yarı saydam koyu çelik mavisi */
   .glass-card {
-    @apply bg-white border border-slate-200 rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-slate-300;
+    background-color: #3b4b6e;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    @apply rounded-xl shadow-md transition-all duration-200;
   }
 
+  /* Ana aksiyon butonu — Kehribar/Altın Sarısı */
   .btn-primary {
-    @apply bg-slate-900 text-white font-semibold px-4 py-2.5 rounded-lg transition-all duration-200 hover:bg-slate-800 hover:-translate-y-0.5 active:scale-95 shadow-sm;
+    @apply bg-amber-500 text-amber-950 font-semibold px-4 py-2.5 rounded-lg
+           transition-all duration-200 hover:bg-amber-400 hover:-translate-y-0.5
+           active:scale-95 shadow-sm;
   }
 
+  /* İkincil buton — Canlı Turkuaz */
   .btn-secondary {
-    @apply bg-white border border-slate-200 text-slate-700 font-medium px-4 py-2.5 rounded-lg transition-all duration-200 hover:bg-slate-50 hover:border-slate-300 hover:-translate-y-0.5 active:scale-95;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    @apply text-slate-200 font-medium px-4 py-2.5 rounded-lg
+           transition-all duration-200 hover:bg-white/20 hover:-translate-y-0.5
+           active:scale-95;
   }
 
+  /* Input alanı — koyu zemin üzerinde okunabilir */
   .input-field {
-    @apply w-full bg-white border border-slate-200 rounded-lg px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-all duration-200;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    @apply w-full rounded-lg px-4 py-3 text-white placeholder-slate-400
+           focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400
+           transition-all duration-200;
   }
 
   .input-field option {
-    @apply bg-white text-slate-900;
+    background-color: #3b4b6e;
+    color: white;
   }
 
+  /* Bölüm başlığı */
   .section-title {
-    @apply text-base font-semibold text-slate-900;
+    @apply text-base font-semibold text-white;
   }
 
+  /* Sayfa sarmalayıcısı */
   .page-container {
-    @apply min-h-screen bg-slate-50 pb-24 lg:pb-6;
+    min-height: 100dvh;
+    background-color: #4f638f;
+    @apply pb-24 lg:pb-6;
   }
 }
 
@@ -68,13 +91,13 @@ body {
 .shimmer-bg {
   background: linear-gradient(90deg,
       rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.06) 50%,
       rgba(255, 255, 255, 0) 100%);
   background-size: 200% 100%;
   animation: shimmer 2.5s linear infinite;
 }
 
-/* ── Wallet card noise texture overlay ──────────────── */
+/* ── Wallet card overlay ──────────────────────────── */
 .wallet-card::before {
   content: '';
   position: absolute;
@@ -85,7 +108,7 @@ body {
   mix-blend-mode: overlay;
 }
 
-/* ── Horizontal scroll hide scrollbar ───────────────── */
+/* ── Horizontal scroll ───────────────────────────────  */
 .scroll-x-hidden {
   overflow-x: auto;
   scrollbar-width: none;
@@ -95,25 +118,15 @@ body {
   display: none;
 }
 
-/* ── Toast animasyonları ──────────────────────────────── */
+/* ── Toast ──────────────────────────────────────────── */
 @keyframes toast-progress {
-  from {
-    width: 100%;
-  }
-
-  to {
-    width: 0%;
-  }
+  from { width: 100%; }
+  to   { width: 0%;   }
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-
-  100% {
-    background-position: 200% 0;
-  }
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200%  0; }
 }
 
 .duration-350 {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Bell, TrendingUp, Clock, CheckCheck,
-  Plus, ChevronRight, Sparkles, Filter, LogOut, X, Loader, RefreshCw,
+  Plus, ChevronRight, Sparkles, Filter, LogOut, X, Loader, RefreshCw, Calendar
 } from 'lucide-react'
 import api from '../api/axios'
 import TaskCard from '../components/TaskCard'
@@ -12,6 +12,7 @@ import NotificationsPanel from '../components/NotificationsPanel'
 import TopupModal from '../components/TopupModal'
 import RatingModal from '../components/RatingModal'
 import Navbar from '../components/Navbar'
+import EventCard from '../components/EventCard'
 import { useToast } from '../components/Toast'
 
 // ── Yeni Sepet Oluştur Modalı ────────────────────────────────
@@ -60,42 +61,42 @@ function CreatePoolModal({ onClose, onCreated }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-slate-900/30" />
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-lg bg-white border border-slate-200 rounded-2xl shadow-sm p-6 pb-8"
+        className="relative w-full max-w-lg glass-card p-6 pb-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="w-10 h-1 w-10 h-1 bg-slate-200 rounded-full mx-auto mb-5" />
+        <div className="w-10 h-1 w-10 h-1 bg-[#3b4b6e]/20 rounded-full mx-auto mb-5" />
         <div className="flex items-center justify-between mb-5">
           <p className="text-base font-semibold">🛒 Yeni Ortak Sepet</p>
-          <button onClick={onClose} className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center hover:bg-slate-50 transition-colors">
-            <X size={15} className="text-slate-400" />
+          <button onClick={onClose} className="w-8 h-8 glass-card flex items-center justify-center hover:bg-[#3b4b6e]/10 transition-colors">
+            <X size={15} className="text-slate-300" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="text-xs text-slate-600 font-medium mb-1 block">Başlık *</label>
+            <label className="text-xs text-slate-300 font-medium mb-1 block">Başlık *</label>
             <input required value={form.title} onChange={set('title')} placeholder="Öğle yemeği siparişi..." className="input-field text-sm py-2.5" />
           </div>
           <div>
-            <label className="text-xs text-slate-600 font-medium mb-1 block">Açıklama</label>
+            <label className="text-xs text-slate-300 font-medium mb-1 block">Açıklama</label>
             <input value={form.description} onChange={set('description')} placeholder="Opsiyonel detaylar..." className="input-field text-sm py-2.5" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-slate-600 font-medium mb-1 block">Lokasyon</label>
-              <select value={form.location} onChange={set('location')} className="input-field text-sm py-2.5 bg-white">
+              <label className="text-xs text-slate-300 font-medium mb-1 block">Lokasyon</label>
+              <select value={form.location} onChange={set('location')} className="input-field text-sm py-2.5 bg-[#3b4b6e]">
                 <option value="">Seçin...</option>
                 {LOCATIONS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs text-slate-600 font-medium mb-1 block">Maks. Kişi *</label>
+              <label className="text-xs text-slate-300 font-medium mb-1 block">Maks. Kişi *</label>
               <input required type="number" min="2" value={form.max_capacity} onChange={set('max_capacity')} placeholder="5" className="input-field text-sm py-2.5" />
             </div>
           </div>
           <div>
-            <label className="text-xs text-slate-600 font-medium mb-1 block">Toplam Maliyet (KP) *</label>
+            <label className="text-xs text-slate-300 font-medium mb-1 block">Toplam Maliyet (KP) *</label>
             <input required type="number" min="1" value={form.total_cost} onChange={set('total_cost')} placeholder="250" className="input-field text-sm py-2.5" />
             {form.max_capacity && form.total_cost && !isNaN(parseInt(form.total_cost) / parseInt(form.max_capacity)) && (
               <p className="text-xs text-emerald-600 mt-1">Kişi başı: {Math.floor(parseInt(form.total_cost) / parseInt(form.max_capacity))} KP</p>
@@ -119,7 +120,7 @@ function WalletCard({ wallet, user, onRefresh, onTopup }) {
   const navigate = useNavigate()
 
   if (!wallet || !user) return (
-    <div className="mx-4 mb-4 mt-2 rounded-2xl h-36 bg-slate-200 animate-pulse" />
+    <div className="mx-4 mb-4 mt-2 rounded-2xl h-36 animate-pulse" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }} />
   )
 
   const handleRefresh = async () => {
@@ -129,7 +130,7 @@ function WalletCard({ wallet, user, onRefresh, onTopup }) {
   }
 
   return (
-    <div className="relative mx-4 mb-4 mt-2 rounded-2xl overflow-hidden bg-slate-900 shadow-sm animate-fade-up">
+    <div className="relative mx-4 mb-4 mt-2 rounded-2xl overflow-hidden shadow-md animate-fade-up" style={{ backgroundColor: '#2e3d5c', border: '1px solid rgba(255,255,255,0.15)' }}>
       <div className="hidden" />
       <div className="hidden" />
       <div className="hidden" />
@@ -137,7 +138,7 @@ function WalletCard({ wallet, user, onRefresh, onTopup }) {
       <div className="relative p-5">
         <div className="flex justify-between items-center mb-5">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center">
+            <div className="w-7 h-7 bg-[#3b4b6e]/20 rounded-lg flex items-center justify-center">
               <Sparkles size={14} className="text-white" />
             </div>
             <span className="text-white/80 text-sm font-medium">UniLoop Cüzdan</span>
@@ -146,7 +147,7 @@ function WalletCard({ wallet, user, onRefresh, onTopup }) {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="w-7 h-7 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center transition-colors"
+              className="w-7 h-7 bg-[#3b4b6e]/10 hover:bg-[#3b4b6e]/20 rounded-lg flex items-center justify-center transition-colors"
               title="Bakiyeyi Yenile"
             >
               <RefreshCw size={13} className={`text-white/70 ${refreshing ? 'animate-spin' : ''}`} />
@@ -189,12 +190,12 @@ function WalletCard({ wallet, user, onRefresh, onTopup }) {
           <div className="flex gap-2">
             <button
               onClick={onTopup}
-              className="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors"
+              className="w-9 h-9 bg-[#3b4b6e]/20 hover:bg-[#3b4b6e]/30 rounded-xl flex items-center justify-center transition-colors"
               title="Kredi Yükle"
             >
               <Plus size={16} className="text-white" />
             </button>
-            <button className="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors">
+            <button className="w-9 h-9 bg-[#3b4b6e]/20 hover:bg-[#3b4b6e]/30 rounded-xl flex items-center justify-center transition-colors">
               <TrendingUp size={16} className="text-white" />
             </button>
           </div>
@@ -207,9 +208,9 @@ function WalletCard({ wallet, user, onRefresh, onTopup }) {
 // ── Skeleton ─────────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div className="bg-white" border border-slate-200 rounded-xl p-4 space-y-2 animate-pulse>
-      <div className="h-4 bg-slate-100 rounded w-3/4" />
-      <div className="h-3 bg-slate-100 rounded w-1/2" />
+    <div className="bg-[#3b4b6e]" border border-slate-200 rounded-xl p-4 space-y-2 animate-pulse>
+      <div className="h-4 bg-[#3b4b6e]/10 rounded w-3/4" />
+      <div className="h-3 bg-[#3b4b6e]/10 rounded w-1/2" />
     </div>
   )
 }
@@ -218,17 +219,17 @@ function SkeletonCard() {
 function PendingTaskCard({ escrow, onOpen }) {
   const statusLabel = {
     locked:          { text: 'İlan sahibi onayı bekleniyor',    cls: 'text-amber-600',   dot: 'bg-amber-400' },
-    buyer_approved:  { text: 'Onayla, işlemi tamamla',         cls: 'text-slate-700',   dot: 'bg-slate-900' },
-    seller_approved: { text: 'İlan sahibinin onayı bekleniyor', cls: 'text-slate-400',   dot: 'bg-slate-300' },
-  }[escrow.status] || { text: escrow.status, cls: 'text-slate-400', dot: 'bg-slate-200' }
+    buyer_approved:  { text: 'Onayla, işlemi tamamla',         cls: 'text-slate-700',   dot: 'bg-amber-500' },
+    seller_approved: { text: 'İlan sahibinin onayı bekleniyor', cls: 'text-slate-300',   dot: 'bg-slate-300' },
+  }[escrow.status] || { text: escrow.status, cls: 'text-slate-300', dot: 'bg-[#3b4b6e]/20' }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3 shadow-sm">
-      <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0">
-        <Clock size={16} className="text-slate-500" />
+    <div className="glass-card p-4 flex items-center gap-3 shadow-sm">
+      <div className="w-9 h-9 rounded-xl bg-[#3b4b6e]/10 flex items-center justify-center flex-shrink-0">
+        <Clock size={16} className="text-slate-300" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-slate-900 truncate">{escrow.task_title}</p>
+        <p className="text-sm font-semibold text-white truncate">{escrow.task_title}</p>
         <div className="flex items-center gap-1.5 mt-0.5">
           <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusLabel.dot}`} />
           <p className={`text-[11px] ${statusLabel.cls} truncate`}>{statusLabel.text}</p>
@@ -239,7 +240,7 @@ function PendingTaskCard({ escrow, onOpen }) {
         <button
           onClick={onOpen}
           className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold
-                     bg-slate-900 text-white hover:bg-slate-800 transition-all active:scale-95"
+                     bg-teal-500 text-white hover:bg-teal-400 transition-all active:scale-95"
         >
           <CheckCheck size={12} />
           Teslim Et
@@ -260,6 +261,7 @@ function FilterSheet({ filterType, filterLocation, filterMaxReward, onApply, onC
     { key: 'skill_exchange',   label: 'Yetenek',   icon: '⚡' },
     { key: 'courier_request',  label: 'Kurye Talep',icon: '📦' },
     { key: 'courier_offer',    label: 'Kurye Teklif',icon: '🛕' },
+    { key: 'second_hand',      label: 'İkinci El',   icon: '🛍️' },
   ]
 
   const handleReset = () => {
@@ -272,27 +274,27 @@ function FilterSheet({ filterType, filterLocation, filterMaxReward, onApply, onC
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-slate-900/30" />
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-lg bg-white border border-slate-200 rounded-t-2xl shadow-sm p-5 pb-10 animate-slide-up"
+        className="relative w-full max-w-lg glass-card rounded-t-2xl p-5 pb-10 animate-slide-up"
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
-        <div className="w-10 h-1 w-10 h-1 bg-slate-200 rounded-full mx-auto mb-5" />
+        <div className="w-10 h-1 w-10 h-1 bg-[#3b4b6e]/20 rounded-full mx-auto mb-5" />
 
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
-            <p className="text-base font-bold text-slate-900">🔍 Filtrele</p>
+            <p className="text-base font-bold text-white">🔍 Filtrele</p>
             {activeCount > 0 && (
-              <span className="text-[10px] bg-slate-900 text-white px-2 py-0.5 rounded-full font-bold">
+              <span className="text-[10px] bg-amber-500 text-amber-950 px-2 py-0.5 rounded-full font-bold">
                 {activeCount} aktif
               </span>
             )}
           </div>
           <button
             onClick={handleReset}
-            className="text-xs text-slate-400 hover:text-slate-700 transition-colors"
+            className="text-xs text-slate-300 hover:text-slate-700 transition-colors"
           >
             Sıfırla
           </button>
@@ -300,7 +302,7 @@ function FilterSheet({ filterType, filterLocation, filterMaxReward, onApply, onC
 
         {/* Görev Türü */}
         <div className="mb-5">
-          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-2.5">Görev Türü</p>
+          <p className="text-xs text-slate-300 font-semibold uppercase tracking-wider mb-2.5">Görev Türü</p>
           <div className="grid grid-cols-2 gap-2">
             {TYPES.map(t => (
               <button
@@ -308,8 +310,8 @@ function FilterSheet({ filterType, filterLocation, filterMaxReward, onApply, onC
                 onClick={() => setLocalType(t.key)}
                 className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
                   ${localType === t.key
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-900 hover:border-slate-300'}`}
+                    ? 'bg-amber-500 text-amber-950'
+                    : 'glass-card text-slate-300 hover:text-white hover:border-white/30'}`}
               >
                 <span>{t.icon}</span>
                 <span>{t.label}</span>
@@ -320,12 +322,12 @@ function FilterSheet({ filterType, filterLocation, filterMaxReward, onApply, onC
 
         {/* Lokasyon */}
         <div className="mb-5">
-          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-2.5">Lokasyon</p>
+          <p className="text-xs text-slate-300 font-semibold uppercase tracking-wider mb-2.5">Lokasyon</p>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setLocalLocation('')}
               className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all
-                ${!localLocation ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-900 hover:border-slate-300'}`}
+                ${!localLocation ? 'bg-amber-500 text-amber-950' : 'glass-card text-slate-300 hover:text-white hover:border-white/30'}`}
             >
               Hepsi
             </button>
@@ -335,8 +337,8 @@ function FilterSheet({ filterType, filterLocation, filterMaxReward, onApply, onC
                 onClick={() => setLocalLocation(localLocation === l.value ? '' : l.value)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all
                   ${localLocation === l.value
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-900 hover:border-slate-300'}`}
+                    ? 'bg-amber-500 text-amber-950'
+                    : 'glass-card text-slate-300 hover:text-white hover:border-white/30'}`}
               >
                 {l.label}
               </button>
@@ -346,7 +348,7 @@ function FilterSheet({ filterType, filterLocation, filterMaxReward, onApply, onC
 
         {/* Maks. Üret */}
         <div className="mb-6">
-          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-2.5">
+          <p className="text-xs text-slate-300 font-semibold uppercase tracking-wider mb-2.5">
             Maks. Üret / Kazanç
             {localMax && <span className="text-emerald-600 ml-2 normal-case">≤ {localMax} KP</span>}
           </p>
@@ -356,7 +358,7 @@ function FilterSheet({ filterType, filterLocation, filterMaxReward, onApply, onC
                 key={v}
                 onClick={() => setLocalMax(v)}
                 className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all
-                  ${localMax === v ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-900 hover:border-slate-300'}`}
+                  ${localMax === v ? 'bg-amber-500 text-amber-950' : 'glass-card text-slate-300 hover:text-white hover:border-white/30'}`}
               >
                 {v ? `≤${v}` : 'Hepsi'}
               </button>
@@ -394,6 +396,9 @@ export default function DashboardPage() {
   const [showTopupModal,    setShowTopupModal]    = useState(false)
   const [pendingEscrows,    setPendingEscrows]    = useState([])
   const [pendingReviews,    setPendingReviews]    = useState([])
+  const [myPendingEvents,   setMyPendingEvents]   = useState([])
+  const [openEvents,        setOpenEvents]        = useState([])
+  const [selectedEventToJoin, setSelectedEventToJoin] = useState(null)
   const [selectedReview,    setSelectedReview]    = useState(null)
   const [showNotifications, setShowNotifications] = useState(false)
 
@@ -408,6 +413,7 @@ export default function DashboardPage() {
       const res = await api.get('/wallet/me')
       setWallet(res.data.wallet)
       setUser(res.data.user)
+      window.dispatchEvent(new Event('wallet_update'))
     } catch { }
   }
 
@@ -439,6 +445,20 @@ export default function DashboardPage() {
     } catch { }
   }
 
+  async function refreshMyEvents() {
+    try {
+      const res = await api.get('/events/my-pending')
+      setMyPendingEvents(res.data.events || [])
+    } catch { }
+  }
+
+  async function refreshOpenEvents() {
+    try {
+      const res = await api.get('/events')
+      setOpenEvents(res.data.events || [])
+    } catch { }
+  }
+
   async function refreshPools() {
     try {
       const res = await api.get('/pools')
@@ -452,6 +472,7 @@ export default function DashboardPage() {
       refreshEscrows()
       refreshReviews()
       refreshTasks()
+      refreshOpenEvents()
     }
   })
 
@@ -459,12 +480,14 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [walletRes, tasksRes, poolsRes, escrowRes, reviewRes] = await Promise.all([
+        const [walletRes, tasksRes, poolsRes, escrowRes, reviewRes, myEventsRes, openEventsRes] = await Promise.all([
           api.get('/wallet/me'),
           api.get('/tasks'),
           api.get('/pools'),
           api.get('/escrow/pending'),
           api.get('/escrow/review-pending'),
+          api.get('/events/my-pending'),
+          api.get('/events')
         ])
         setWallet(walletRes.data.wallet)
         setUser(walletRes.data.user)
@@ -472,6 +495,8 @@ export default function DashboardPage() {
         setPools(poolsRes.data.pools || [])
         setPendingEscrows(escrowRes.data.escrows || [])
         setPendingReviews(reviewRes.data.reviews || [])
+        setMyPendingEvents(myEventsRes.data.events || [])
+        setOpenEvents(openEventsRes.data.events || [])
       } catch (err) {
         console.error('Dashboard yüklenemedi:', err)
       } finally {
@@ -516,6 +541,7 @@ export default function DashboardPage() {
     { key: 'skill_exchange', label: '⚡ Yetenek' },
     { key: 'courier_request', label: '📦 Kurye' },
     { key: 'courier_offer', label: '🛵 Teklif' },
+    { key: 'second_hand', label: '🛍️ İkinci El' },
   ]
 
   return (
@@ -523,19 +549,19 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-12 pb-2">
         <div>
-          <p className="text-slate-400 text-xs">Hoş geldin 👋</p>
-          <h1 className="text-xl font-bold text-slate-900">
+          <p className="text-slate-300 text-xs">Hoş geldin 👋</p>
+          <h1 className="text-xl font-bold text-white">
             {user ? user.full_name : '...'}
           </h1>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowNotifications(true)}
-            className="relative w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center hover:bg-slate-50 transition-colors"
+            className="relative w-10 h-10 glass-card flex items-center justify-center hover:bg-[#3b4b6e]/10 transition-colors"
           >
-            <Bell size={18} className="text-slate-500" />
+            <Bell size={18} className="text-slate-300" />
             {pendingEscrows.length + pendingReviews.length > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 rounded-full
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-rose-500 rounded-full
                                text-[9px] font-bold flex items-center justify-center px-1">
                 {pendingEscrows.length + pendingReviews.length}
               </span>
@@ -543,10 +569,10 @@ export default function DashboardPage() {
           </button>
           <button
             onClick={handleLogout}
-            className="lg:hidden w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center hover:bg-slate-50 transition-colors"
+            className="lg:hidden w-10 h-10 glass-card flex items-center justify-center hover:bg-[#3b4b6e]/10 transition-colors"
             title="Çıkış Yap"
           >
-            <LogOut size={16} className="text-slate-400" />
+            <LogOut size={16} className="text-slate-300" />
           </button>
         </div>
       </div>
@@ -561,15 +587,15 @@ export default function DashboardPage() {
 
       {/* Bekleyen Görevlerim */}
       {(() => {
-        if (pendingEscrows.length === 0) return null
+        if (pendingEscrows.length === 0 && myPendingEvents.length === 0) return null
         return (
           <section className="mb-5">
             <div className="flex items-center justify-between px-4 mb-3">
-              <h2 className="text-base" font-semibold text-slate-900 flex items-center gap-2>
+              <h2 className="text-base font-semibold text-white flex items-center gap-2">
                 <Clock size={15} className="text-amber-400" />
                 Bekleyen İşlemlerim
               </h2>
-              <span className="text-xs text-slate-400\">{pendingEscrows.length} işlem</span>
+              <span className="text-xs text-slate-300">{pendingEscrows.length + myPendingEvents.length} işlem</span>
             </div>
             <div className="px-4 space-y-2">
               {pendingEscrows.map(escrow => (
@@ -580,6 +606,42 @@ export default function DashboardPage() {
                   onOpen={() => setSelectedEscrow(escrow)}
                 />
               ))}
+
+              {myPendingEvents.map(event => (
+                <div key={event.id} className="glass-card p-4 flex items-center gap-3 shadow-sm border border-fuchsia-500/10">
+                  <div className="w-9 h-9 rounded-xl bg-fuchsia-500/10 flex items-center justify-center flex-shrink-0">
+                    <Calendar size={16} className="text-fuchsia-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-white truncate">{event.title}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${event.status === 'full' ? 'bg-emerald-500' : 'bg-fuchsia-400'}`} />
+                      <p className={`text-[11px] ${event.status === 'full' ? 'text-emerald-400' : 'text-fuchsia-300'} truncate`}>
+                        {event.current_participants} / {event.max_participants} Katılımcı
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await api.post(`/events/${event.id}/approve`)
+                          toast.success(res.data.message)
+                          refreshMyEvents()
+                          refreshWallet()
+                        } catch(err) {
+                          toast.error(err.response?.data?.message || 'Onaylanamadı')
+                        }
+                      }}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold
+                                bg-fuchsia-600 text-white hover:bg-fuchsia-500 transition-all active:scale-95 shadow-fuchsia-500/20 shadow-md"
+                    >
+                      <CheckCheck size={12} />
+                      Bitir & Dağıt
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
         )
@@ -588,14 +650,14 @@ export default function DashboardPage() {
       {/* Aktif Ortak Sepetler */}
       <section className="mb-5">
         <div className="flex items-center justify-between px-4 mb-3">
-          <h2 className="text-base" font-semibold text-slate-900>🛒 Aktif Ortak Sepetler</h2>
+          <h2 className="text-base" font-semibold text-white>🛒 Aktif Ortak Sepetler</h2>
           <button className="flex items-center gap-0.5 text-brand-light text-xs font-medium">
             Tümü <ChevronRight size={14} />
           </button>
         </div>
         <div className="flex gap-3 px-4 scroll-x-hidden pb-1">
           {loading
-            ? [1, 2].map(i => <div key={i} className="bg-white border border-slate-200 rounded-xl min-w-[160px] h-24 animate-pulse flex-shrink-0" />)
+            ? [1, 2].map(i => <div key={i} className="glass-card min-w-[160px] h-24 animate-pulse flex-shrink-0" />)
             : pools.map((pool) => (
               <PoolBar
                 key={pool.id}
@@ -605,18 +667,74 @@ export default function DashboardPage() {
             ))
           }
           <div
-            className="bg-white border-2 border-dashed border-slate-200 rounded-xl min-w-[160px] flex-shrink-0 flex flex-col items-center justify-center gap-2 p-4 cursor-pointer hover:border-slate-400 hover:bg-slate-50 transition-all active:scale-95"
+            className="border-2 border-dashed border-white/20 bg-[#3b4b6e]/5 rounded-xl min-w-[160px] flex-shrink-0 flex flex-col items-center justify-center gap-2 p-4 cursor-pointer hover:border-white/40 hover:bg-[#3b4b6e]/10 transition-all active:scale-95"
             onClick={() => setShowCreatePool(true)}
           >
             <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center">
               <Plus size={20} className="text-brand-light" />
             </div>
-            <p className="text-xs" text-slate-400 text-center leading-tight>
+            <p className="text-xs" text-slate-300 text-center leading-tight>
               Yeni Sepet Oluştur
             </p>
           </div>
         </div>
       </section>
+
+      {/* Etkinlikler (Events) */}
+      {openEvents.length > 0 && (
+        <section className="mb-6">
+          <div className="flex items-center justify-between px-4 mb-3">
+            <h2 className="text-base font-semibold text-white flex items-center gap-2">
+              <Sparkles size={16} className="text-fuchsia-400" />
+              Açık Etkinlikler
+            </h2>
+            <button 
+              onClick={() => navigate('/tasks')} 
+              className="text-xs text-fuchsia-400 font-medium hover:text-fuchsia-300"
+            >
+              Tümünü Gör
+            </button>
+          </div>
+          <div className="flex gap-3 px-4 overflow-x-auto pb-2 no-scrollbar">
+            {openEvents.map((event) => (
+              <div 
+                key={event.id}
+                className={`glass-card relative overflow-hidden min-w-[240px] flex-shrink-0 p-4 border transition-all ${event.creator_id === user?.id || event.is_joined || event.status === 'full' ? 'border-fuchsia-500/10 opacity-70' : 'border-fuchsia-500/20 cursor-pointer hover:border-fuchsia-500/40 group'}`}
+                onClick={() => {
+                  if (event.creator_id === user?.id) {
+                    toast.warning('Kendi etkinliğinize katılamazsınız.')
+                    return
+                  }
+                  if (event.status === 'full') {
+                    toast.warning('Bu etkinliğin kontenjanı dolmuş.')
+                    return
+                  }
+                  if (event.is_joined) {
+                    toast.info('Bu etkinliğe zaten katıldınız.')
+                    return
+                  }
+                  setSelectedEventToJoin(event)
+                }}
+              >
+                <div className="absolute top-0 right-0 w-24 h-24 bg-fuchsia-500/10 blur-2xl -mr-8 -mt-8 pointer-events-none" />
+                <p className="text-[10px] text-fuchsia-400/80 mb-1">{event.creator_name}</p>
+                <h3 className="text-sm font-semibold text-white leading-tight mb-3 truncate">
+                  {event.title}
+                </h3>
+                <div className="flex items-center justify-between mt-auto">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-300">
+                    <Calendar size={12} className="text-fuchsia-400" />
+                    <span><strong className="text-white">{event.current_participants}</strong>/{event.max_participants}</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-fuchsia-400 bg-fuchsia-500/10 px-2 py-1 rounded-lg">
+                    +{event.reward_per_participant} KP
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Filtreler */}
       <div className="flex gap-2 px-4 mb-3 overflow-x-auto pb-1 no-scrollbar">
@@ -626,8 +744,8 @@ export default function DashboardPage() {
             onClick={() => setFilterType(key)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium transition-all
               ${filterType === key
-                ? 'bg-slate-900 text-white'
-                : 'bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-700'
+                ? 'bg-amber-500 text-amber-950'
+                : 'glass-card text-slate-300 hover:text-slate-700'
               }`}
           >
             {label}
@@ -636,11 +754,11 @@ export default function DashboardPage() {
         <button
           onClick={() => setShowFilterSheet(true)}
           className={`relative flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border transition-all ml-auto
-            ${activeFilterCount > 0 ? 'bg-slate-900 border-slate-900' : 'bg-white border-slate-200 hover:bg-slate-50'}`}
+            ${activeFilterCount > 0 ? 'bg-amber-500 border-slate-900' : 'bg-[#3b4b6e] border-slate-200 hover:bg-[#3b4b6e]/10'}`}
         >
-          <Filter size={13} className={activeFilterCount > 0 ? 'text-white' : 'text-slate-500'} />
+          <Filter size={13} className={activeFilterCount > 0 ? 'text-white' : 'text-slate-300'} />
           {activeFilterCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 rounded-full
                              text-[9px] font-bold text-white flex items-center justify-center">
               {activeFilterCount}
             </span>
@@ -651,14 +769,14 @@ export default function DashboardPage() {
       {/* İlanlar Listesi */}
       <section className="px-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-semibold text-slate-900">📍 Yakınımdaki İlanlar</h2>
-          <span className="text-xs text-slate-400">{filteredTasks.length} ilan</span>
+          <h2 className="text-base font-semibold text-white">📍 Yakınımdaki İlanlar</h2>
+          <span className="text-xs text-slate-300">{filteredTasks.length} ilan</span>
         </div>
         <div className="space-y-3">
           {loading
             ? [1, 2, 3].map(i => <SkeletonCard key={i} />)
             : filteredTasks.length === 0
-              ? <p className="text-center text-slate-400 text-sm py-8">Henüz ilan yok.</p>
+              ? <p className="text-center text-slate-300 text-sm py-8">Henüz ilan yok.</p>
               : filteredTasks.map((task) => (
                 <TaskCard
                   key={task.id}
@@ -692,6 +810,35 @@ export default function DashboardPage() {
           }
         </div>
       </section>
+
+      {/* Etkinliğe Katılma Modalı */}
+      {selectedEventToJoin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4" onClick={() => setSelectedEventToJoin(null)}>
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
+          <div className="relative w-full max-w-lg animate-fade-up" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => setSelectedEventToJoin(null)}
+              className="absolute -top-3 -right-3 z-10 w-8 h-8 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center shadow-xl hover:bg-slate-700 transition-colors"
+            >
+              <X size={14} className="text-slate-300" />
+            </button>
+            <EventCard 
+              event={selectedEventToJoin}
+              currentUserId={user?.id}
+              onJoin={async (evt) => {
+                try {
+                  const res = await api.post(`/events/${evt.id}/join`)
+                  toast.success(res.data.message)
+                  setSelectedEventToJoin(null)
+                  refreshOpenEvents()
+                } catch (err) {
+                  toast.error(err.response?.data?.message || 'Katılım sağlanamadı.')
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Escrow Modal */}
       {selectedEscrow && (

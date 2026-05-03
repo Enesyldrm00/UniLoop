@@ -38,28 +38,28 @@ export default function RatingModal({ review, onClose, onSubmitted }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="absolute inset-0 bg-slate-900/30" onClick={onClose} />
-      <div className="relative w-full max-w-sm bg-white border border-slate-200 rounded-2xl p-6 shadow-lg animate-slide-up">
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-sm glass-card rounded-2xl p-6 shadow-lg animate-slide-up">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg border border-white/15 hover:bg-white/5 transition-colors"
         >
           <X size={16} className="text-slate-400" />
         </button>
 
         {done ? (
           <div className="flex flex-col items-center py-6 gap-3">
-            <CheckCircle2 size={48} className="text-emerald-600" />
-            <p className="text-lg font-bold text-slate-900">Puan Verildi!</p>
+            <CheckCircle2 size={48} className="text-teal-400" />
+            <p className="text-lg font-bold text-white">Puan Verildi!</p>
             <p className="text-sm text-slate-400">Teşekkürler 🎉</p>
           </div>
         ) : (
           <>
             <div className="text-center mb-6">
               <div className="text-4xl mb-3">⭐</div>
-              <h2 className="text-lg font-bold text-slate-900">Deneyimini Puanla</h2>
-              <p className="text-sm text-slate-500 mt-1">
-                <span className="text-slate-900 font-semibold">{review.reviewee_name}</span> ile çalışman nasıldı?
+              <h2 className="text-lg font-bold text-white">Deneyimini Puanla</h2>
+              <p className="text-sm text-slate-300 mt-1">
+                <span className="text-white font-semibold">{review.reviewee_name}</span> ile çalışman nasıldı?
               </p>
               <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{review.task_title}</p>
             </div>
@@ -84,12 +84,12 @@ export default function RatingModal({ review, onClose, onSubmitted }) {
               ))}
             </div>
 
-            <p className={`text-center text-sm font-semibold text-slate-700 mb-4 transition-opacity duration-150 ${activeRating ? 'opacity-100' : 'opacity-0'}`}>
+            <p className={`text-center text-sm font-semibold text-white/80 mb-4 transition-opacity duration-150 ${activeRating ? 'opacity-100' : 'opacity-0'}`}>
               {STAR_LABELS[activeRating]}
             </p>
 
             <div className="mb-5">
-              <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+              <label className="text-xs font-semibold text-slate-300 mb-1.5 block">
                 Yorum <span className="text-slate-400 font-normal">(isteğe bağlı)</span>
               </label>
               <textarea

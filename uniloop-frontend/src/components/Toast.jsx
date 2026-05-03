@@ -52,31 +52,31 @@ function ToastItem({ toast, onDismiss }) {
   const cfg = {
     success: {
       icon:    <CheckCircle2 size={18} />,
-      bg:      'bg-white border-emerald-200',
-      icon_cl: 'text-emerald-600',
+      bg:      'bg-[#3b4b6e] border-emerald-200',
+      icon_cl: 'text-teal-400',
       bar:     'bg-emerald-500',
-      label:   'text-slate-900',
+      label:   'text-white',
     },
     error: {
       icon:    <XCircle size={18} />,
-      bg:      'bg-white border-red-200',
+      bg:      'bg-[#3b4b6e] border-red-200',
       icon_cl: 'text-red-500',
       bar:     'bg-red-500',
-      label:   'text-slate-900',
+      label:   'text-white',
     },
     warning: {
       icon:    <AlertTriangle size={18} />,
-      bg:      'bg-white border-amber-200',
+      bg:      'bg-[#3b4b6e] border-amber-200',
       icon_cl: 'text-amber-500',
       bar:     'bg-amber-500',
-      label:   'text-slate-900',
+      label:   'text-white',
     },
     info: {
       icon:    <Info size={18} />,
-      bg:      'bg-white border-slate-200',
-      icon_cl: 'text-slate-500',
+      bg:      'bg-[#3b4b6e] border-white/15',
+      icon_cl: 'text-slate-300',
       bar:     'bg-slate-400',
-      label:   'text-slate-900',
+      label:   'text-white',
     },
   }[toast.type] || cfg?.info
 
@@ -104,13 +104,13 @@ function ToastItem({ toast, onDismiss }) {
       {/* Kapat butonu */}
       <button
         onClick={() => onDismiss(toast.id)}
-        className="flex-shrink-0 mt-0.5 text-slate-300 hover:text-slate-500 transition-colors"
+        className="flex-shrink-0 mt-0.5 text-slate-300 hover:text-slate-300 transition-colors"
       >
         <X size={14} />
       </button>
 
       {/* Alt progress bar */}
-      <div className="absolute bottom-0 left-0 h-[2px] w-full bg-slate-100">
+      <div className="absolute bottom-0 left-0 h-[2px] w-full bg-white/10">
         <div
           className={`h-full ${cfg.bar} opacity-70`}
           style={{

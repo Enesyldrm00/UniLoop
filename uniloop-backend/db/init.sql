@@ -15,7 +15,8 @@ CREATE TYPE campus_location AS ENUM (
 CREATE TYPE task_type AS ENUM (
     'skill_exchange',
     'courier_request',
-    'courier_offer'
+    'courier_offer',
+    'second_hand'
 );
 
 CREATE TYPE task_status AS ENUM (
@@ -128,6 +129,7 @@ CREATE TABLE tasks (
     location          campus_location,
     from_location     campus_location,
     to_location       campus_location,
+    image_url         VARCHAR(255),
     is_auto_generated BOOLEAN DEFAULT FALSE,
     created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expires_at        TIMESTAMP

@@ -11,7 +11,7 @@ const navItems = [
 export default function Navbar() {
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 pb-safe lg:hidden">
-      <div className="bg-white border-t border-slate-200 shadow-sm">
+      <div style={{ backgroundColor: '#2e3d5c', borderTop: '1px solid rgba(255,255,255,0.12)' }}>
         <div className="flex items-center justify-around px-2 py-2">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
@@ -21,8 +21,8 @@ export default function Navbar() {
               className={({ isActive }) =>
                 `flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-lg transition-all duration-200
                  ${isActive
-                   ? 'text-slate-900'
-                   : 'text-slate-400 hover:text-slate-600'
+                   ? 'text-amber-400'
+                   : 'text-slate-400 hover:text-slate-200'
                  }`
               }
             >

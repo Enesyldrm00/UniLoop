@@ -11,8 +11,8 @@ const LOCATION_LABELS = {
 }
 
 const getFillColor = (pct) => {
-  if (pct >= 100) return { bar: 'bg-emerald-500', text: 'text-emerald-600' }
-  if (pct >= 80)  return { bar: 'bg-emerald-400', text: 'text-emerald-600' }
+  if (pct >= 100) return { bar: 'bg-emerald-500', text: 'text-teal-400' }
+  if (pct >= 80)  return { bar: 'bg-emerald-400', text: 'text-teal-400' }
   if (pct >= 50)  return { bar: 'bg-amber-400',   text: 'text-amber-600'  }
   return               { bar: 'bg-slate-200',     text: 'text-slate-400'  }
 }
@@ -52,10 +52,10 @@ export default function PoolBar({ pool, onJoin }) {
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 min-w-[220px] max-w-[220px] flex-shrink-0
+    <div className="glass-card rounded-xl p-4 min-w-[220px] max-w-[220px] flex-shrink-0
                     transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-slate-300">
       {/* Başlık */}
-      <p className="text-sm font-semibold text-slate-900 leading-snug line-clamp-1 mb-1">
+      <p className="text-sm font-semibold text-white leading-snug line-clamp-1 mb-1">
         {curPool.title}
       </p>
 
@@ -82,7 +82,7 @@ export default function PoolBar({ pool, onJoin }) {
             %{fillPct}
           </span>
         </div>
-        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-500 ${color.bar}`}
             style={{ width: `${fillPct}%` }}
@@ -93,7 +93,7 @@ export default function PoolBar({ pool, onJoin }) {
       {/* Sepet DOLU → Otomatik kurye ilanı banner */}
       {isFull && (
         <div className="flex items-center gap-2 mt-3 p-2.5 rounded-lg bg-emerald-50 border border-emerald-200">
-          <Truck size={13} className="text-emerald-600 flex-shrink-0" />
+          <Truck size={13} className="text-teal-400 flex-shrink-0" />
           <div>
             <p className="text-[10px] font-semibold text-emerald-700">Sepet Doldu!</p>
             <p className="text-[9px] text-slate-400 leading-tight">Otomatik kurye ilanı oluşturuldu 🚚</p>
@@ -106,17 +106,17 @@ export default function PoolBar({ pool, onJoin }) {
         <div className="flex items-center justify-between mt-3 gap-2">
           <div>
             <span className="text-[10px] text-slate-400 font-medium">Kişi başı</span>
-            <p className="text-xs font-bold text-emerald-600">{curPool.cost_per_person} KP</p>
+            <p className="text-xs font-bold text-teal-400">{curPool.cost_per_person} KP</p>
           </div>
           <button
             onClick={handleJoin}
             disabled={joining || joined || curPool.status !== 'open'}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200
               ${joined
-                ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                ? 'bg-emerald-50 text-teal-400 border border-emerald-200'
                 : curPool.status !== 'open'
-                  ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
-                  : 'bg-slate-900 text-white hover:bg-slate-800 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0'
+                  ? 'bg-white/10 text-slate-300 cursor-not-allowed'
+                  : 'btn-primary hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0'
               }`}
           >
             {joining  ? <Loader size={12} className="animate-spin" />

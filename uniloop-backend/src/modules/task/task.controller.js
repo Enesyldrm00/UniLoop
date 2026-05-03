@@ -18,20 +18,13 @@ const getTasks = async (req, res, next) => {
     let query = `
       SELECT
         t.id, t.title, t.description, t.task_type, t.status,
-        t.reward_kredi, t.location, t.from_location, t.to_location,
+        t.reward_kredi, t.location, t.from_location, t.to_location, t.image_url,
         t.creator_id,
         t.is_auto_generated, t.created_at, t.expires_at,
         u.full_name AS creator_name,
         u.rating_average, u.rating_count,
         p.credibility_score,
-        ROUND(t.reward_kredi * (
-          CASE
-            WHEN p.credibility_score >= 81 THEN 2.0
-            WHEN p.credibility_score >= 61 THEN 1.5
-            WHEN p.credibility_score >= 31 THEN 1.2
-            ELSE 1.0
-          END
-        )) AS effective_reward
+        t.reward_kredi AS effective_reward
       FROM tasks t
       JOIN users u ON u.id = t.creator_id
       LEFT JOIN user_profiles p ON p.user_id = t.creator_id
@@ -66,6 +59,7 @@ const createTask = async (req, res, next) => {
     title, description, task_type = 'skill_exchange',
     reward_kredi, location, from_location, to_location, expires_at,
   } = req.body;
+  const image_url = req.file ? req.file.filename : null;
 
   if (!title || !reward_kredi) {
     return next(new AppError('Başlık ve ödül miktarı zorunludur.', 400));
@@ -84,14 +78,14 @@ const createTask = async (req, res, next) => {
     const result = await pool.query(
       `INSERT INTO tasks
          (creator_id, title, description, task_type, reward_kredi,
-          location, from_location, to_location, expires_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+          location, from_location, to_location, image_url, expires_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        RETURNING *`,
       [
         req.user.id, title, description, task_type,
         parseInt(reward_kredi, 10),
         location || null, from_location || null, to_location || null,
-        expires_at || null,
+        image_url, expires_at || null,
       ]
     );
 
@@ -121,7 +115,10 @@ const assignTask = async (req, res, next) => {
 
     // Görev bilgisini kilitle
     const taskResult = await client.query(
-      'SELECT * FROM tasks WHERE id = $1 FOR UPDATE',
+      `SELECT t.*, p.credibility_score 
+       FROM tasks t 
+       LEFT JOIN user_profiles p ON p.user_id = t.creator_id 
+       WHERE t.id = $1 FOR UPDATE OF t`,
       [taskId]
     );
 
@@ -143,6 +140,8 @@ const assignTask = async (req, res, next) => {
       await client.query('ROLLBACK');
       return next(new AppError('Kendi ilanınıza katılamazsınız.', 400));
     }
+
+    const effective_reward = task.reward_kredi;
 
     // ── Para akışı: görev türüne göre roller belirlenir ────────
     // buyer  = parayı ödeyen (escrow'a kilitlenen)
@@ -167,7 +166,7 @@ const assignTask = async (req, res, next) => {
     // cüzdanından anlık olarak oluşturulur ve direkt ödenir.
     if (task.is_auto_generated) {
       const SYSTEM_ID = parseInt(process.env.SYSTEM_USER_ID || '1', 10);
-      const amount    = parseInt(task.reward_kredi, 10);
+      const amount = effective_reward;
 
       // Mevcut escrow'u kontrol et (trigger tarafından oluşturulmuş olabilir)
       const existingEscrow = await client.query(
@@ -249,9 +248,9 @@ const assignTask = async (req, res, next) => {
       await client.query('COMMIT');
 
       return res.json({
-        success:     true,
-        auto_paid:   true,
-        message:     `Kurye görevi kabul edildi! ${amount} KP anında cüzdanınıza yatırıldı. 🚚`,
+        success: true,
+        auto_paid: true,
+        message: `Kurye görevi kabul edildi! ${amount} KP anında cüzdanınıza yatırıldı. 🚚`,
         paid_amount: amount,
       });
     }
@@ -269,11 +268,11 @@ const assignTask = async (req, res, next) => {
 
     const wallet = walletResult.rows[0];
 
-    if (wallet.balance < task.reward_kredi) {
+    if (wallet.balance < effective_reward) {
       await client.query('ROLLBACK');
       const who = task.task_type === 'courier_request' ? 'İlan sahibinin bakiyesi' : 'Bakiyeniz';
       return next(new AppError(
-        `${who} yetersiz. Gerekli: ${task.reward_kredi} KP, Mevcut: ${wallet.balance} KP`,
+        `${who} yetersiz. Gerekli: ${effective_reward} KP, Mevcut: ${wallet.balance} KP`,
         400
       ));
     }
@@ -283,7 +282,7 @@ const assignTask = async (req, res, next) => {
       `INSERT INTO escrows (task_id, buyer_id, seller_id, amount, status)
        VALUES ($1, $2, $3, $4, 'locked')
        RETURNING *`,
-      [taskId, buyerId, sellerId, task.reward_kredi]
+      [taskId, buyerId, sellerId, effective_reward]
     );
 
     // Görevi güncelle
@@ -297,7 +296,7 @@ const assignTask = async (req, res, next) => {
     res.json({
       success: true,
       message: 'İlan başarıyla kabul edildi. Ödeme emanete alındı.',
-      escrow:  escrowResult.rows[0],
+      escrow: escrowResult.rows[0],
     });
   } catch (err) {
     await client.query('ROLLBACK');

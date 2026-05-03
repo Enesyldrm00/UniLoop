@@ -57,28 +57,29 @@ export default function AuthPage({ onSuccess }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ backgroundColor: '#4f638f' }}>
       <div className="w-full max-w-sm animate-fade-up">
 
         {/* Logo & Başlık */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <GraduationCap size={32} className="text-white" />
+          <div className="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <GraduationCap size={32} className="text-amber-950" />
           </div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">UniLoop</h1>
-          <p className="text-slate-400 text-sm mt-1">Kampüs içi kapalı ekonomi</p>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">UniLoop</h1>
+          <p className="text-slate-300 text-sm mt-1">Kampüs içi kapalı ekonomi</p>
         </div>
 
         {/* Tab Geçişi */}
-        <div className="bg-white border border-slate-200 rounded-xl p-1 flex gap-1 mb-5">
+        <div className="rounded-xl p-1 flex gap-1 mb-5" style={{ backgroundColor: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
           {['login', 'register'].map((t) => (
             <button
               key={t}
               onClick={() => { setTab(t); setError('') }}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200
-                ${tab === t
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-700'
+                ${
+                  tab === t
+                    ? 'bg-amber-500 text-amber-950 shadow-sm'
+                    : 'text-slate-300 hover:text-white'
                 }`}
             >
               {t === 'login' ? 'Giriş Yap' : 'Kayıt Ol'}
@@ -87,7 +88,7 @@ export default function AuthPage({ onSuccess }) {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-sm">
+        <form onSubmit={handleSubmit} className="rounded-xl p-6 space-y-4 shadow-md" style={{ backgroundColor: '#3b4b6e', border: '1px solid rgba(255,255,255,0.15)' }}>
 
           {/* Ad Soyad — sadece kayıt */}
           {tab === 'register' && (

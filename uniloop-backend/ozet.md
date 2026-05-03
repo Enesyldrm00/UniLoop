@@ -1,43 +1,72 @@
-# UniLoop Platformu - Güncel Proje Özeti
+# UniLoop — Kampüs Ekonomisi Platformu Özet Raporu
 
-Bu belge, UniLoop platformunun mevcut mimarisini, ekonomik sistemini ve son yapılan güncellemeleri özetlemektedir.
+UniLoop, üniversite öğrencilerinin kendi aralarında yetenek değişimi yapabildiği, kurye hizmeti alabildiği ve ikinci el ürün alıp satabildiği güvenli bir ekosistemdir.
 
-## 1. Projenin Amacı ve Temel Yapısı
-UniLoop, kampüs içi mikro görevleri, yetenek takasını ve öğrencilerin ortaklaşa kullanabileceği kurye sepetlerini tek bir platformda birleştiren modern bir sistemdir.
-- **Frontend:** React, TailwindCSS, Lucide Icons (Koyu tema, Glassmorphism ve animasyonlu modern UI).
-- **Backend:** Node.js, Express, PostgreSQL.
+## 🚀 Teknolojik Mimari
 
-## 2. Ekonomik Sistem (Kampüs Puanı - KP)
-- Platformdaki işlemler **KP (Kampüs Puanı)** üzerinden yürütülür.
-- Güçlü bir başlangıç deneyimi için standart kullanıcıların başlangıç bakiyesi **100.000 KP**'ye sabitlenmiştir.
-- Sistemin otomatik süreçlerini (örneğin kurye sepetlerini fonlamak) yönetmesi amacıyla **SYSTEM (ID: 1)** adlı özel bir yönetici cüzdanı kurulmuş olup bakiyesi **10.000 KP**'dir.
+### Backend (uniloop-backend)
+- **Çalışma Ortamı:** Node.js & Express.js
+- **Veritabanı:** PostgreSQL (pg pool üzerinden bağlantı).
+- **Dosya Yönetimi:** `multer` ile yerel görsel yükleme sistemi (`uploads/` klasörü).
+- **Güvenlik:** JWT tabanlı kimlik doğrulama ve `protect` middleware.
+- **Ödeme Altyapısı:** ACID prensiplerine uygun, Transaction (BEGIN/COMMIT) tabanlı Escrow sistemi.
 
-## 3. Görev ve Escrow (Güvenli Ödeme) Sistemi
-Sistemde güvenli alışveriş için çift taraflı onay mekanizmasına dayalı bir **Escrow (Emanet)** modeli bulunmaktadır:
-- **Para Kilitleme:** Bir görev kabul edildiğinde (veya kurye sepeti dolduğunda), ilan sahibinden (veya SYSTEM'den) tutar kesilerek escrow kasasında kilitlenir (`locked`).
-- **İki Yönlü Onay (Double Confirmation):** 
-  - Görevi alan kişi işi bitirdiğinde **"Teslim Et"** butonuna basar (`seller_approved: true`).
-  - Görevi veren kişi (ilan sahibi) bu durumu onayladığında **"Onayla"** butonuna basar (`buyer_approved: true`).
-  - Her iki onay sağlandığında para görevi tamamlayan kişiye aktarılır (`released`).
-- İşlem esnasında problem çıkarsa, `dispute` (anlaşmazlık) butonuyla işlem dondurulabilir.
+### Frontend (uniloop-frontend)
+- **Kütüphane:** React (Vite tabanlı).
+- **Tasarım:** "Steel Blue Fintech" teması (Özel çelik mavisi ve kehribar sarısı vurgular).
+- **Stil:** Tailwind CSS, `glass-card` ve `backdrop-blur` efektleri.
+- **İkonlar:** Lucide React.
+- **İletişim:** Axios tabanlı API yönetimi.
 
-## 4. Gerçek Zamanlı Senkronizasyon (Polling Mekanizması)
-- Kullanıcıların karşılıklı onayları ve işlemlerin ilerleyişi **5 saniyelik Polling (arka plan sorgusu)** mekanizmasıyla anında güncellenir.
-- React'teki `setInterval` işlemlerinden kaynaklanan *Stale Closure* (eski veri kalma) hataları `useRef` tabanlı modern bir yaklaşımla çözüldü.
-- **Sonuç:** Ali bir görevi teslim ettiğinde, Ayşe'nin açık olan modalı veya "Bekleyen İşlemlerim" kartı sayfayı yenilemeye gerek kalmadan **anında** güncellenir. İlan birisi tarafından kabul edildiğinde de görev listesinden anında silinip bekleyen işlemlere geçer.
+---
 
-## 5. Otomatik Kurye (Ortak Sepet) Sistemi
-- Öğrenciler aynı mekandan verilen siparişleri ortak sepetlerde (örn. Yemekhane Ortak Sepet) birleştirebilir.
-- Sepet dolduğunda (örn. 5/5), sistem devreye girerek otomatik bir Kurye İlanı oluşturur.
-- Parası **SYSTEM** tarafından fonlanan bu otomatik görevler, bir kurye tarafından üstlenildiğinde escrow (bekleme) sürecine girmeden **anında onaylanıp** kuryeye ödemesi yapılır.
+## 🛠️ Temel Modüller ve Özellikler
 
-## 6. Gelişmiş Filtreleme Arayüzü (Filter Sheet)
-- Kullanıcılar aradıkları ilanlara kolayca ulaşabilmek için, Dashboard ekranında gelişmiş bir **Filtreleme Modalı (FilterSheet)** kullanabilir.
-- **Filtreleme Kriterleri:**
-  1. **Görev Türü:** Yetenek, Kurye Talep, Kurye Teklif
-  2. **Lokasyon:** Mühendislik, Merkez Kantin, Yabancı Dil, Sosyal Yaşam, Kütüphane (Hepsi emoji desteklidir).
-  3. **Maksimum Ücret (KP):** ≤50, ≤100, ≤200, ≤500
-- İkonun sağ üstünde, aktif olarak kullanılan filtre sayısını gösteren akıllı bir bildirim ("Badge") bulunur.
+### 1. İlan Sistemi (Tasks)
+- **Kategoriler:** 
+  - 🤝 **Yetenek Değişimi:** Bir konuda yardım et/yardım al.
+  - 🚚 **Kurye Teklifi:** "X yerinden Y yerine gidiyorum, bir şey isteyen?"
+  - 📦 **Kurye Talebi:** "Bana şuradan şunu getirir misiniz?"
+  - 🛍️ **İkinci El Eşya:** Eşya satışı (Fotoğraf destekli).
+- **Dinamik Ödül Sistemi:** Kullanıcının **Credibility Score**'una göre (1.2x, 1.5x, 2.0x) çarpan uygulanan efektif ödül miktarı.
 
-## 7. Son Durum Özeti
-UniLoop, güvenli cüzdan altyapısı, sorunsuz çalışan escrow onaylama sistemi, eş zamanlı ekran senkronizasyonu ve gelişmiş filtreleme özellikleriyle stabil, canlı bir "Kampüs Pazaryeri" haline gelmiştir. Eski tüm geçici dosyalar (ozet1.md, ozet11.md vs.) temizlenerek tek bir dökümantasyonda toplanmıştır.
+### 2. Escrow & Ödeme Akışı
+- **Güvenli Ödeme:** Para alıcıdan peşin alınır, "locked" durumunda bekletilir.
+- **Onay Mekanizması:** Hem alıcı hem satıcı onayladığında para transferi gerçekleşir.
+- **Şeffaflık:** `transactions` tablosunda her kuruşun kaydı tutulur.
+
+### 3. Mesajlaşma (Messaging)
+- Kullanıcılar arası doğrudan iletişim.
+- İlan üzerinden başlatılan sohbetler.
+- Temaya uygun, modern "floating pill" tasarımlı mesaj barı.
+
+### 4. Kullanıcı Profili ve İstatistikler
+- Cüzdan bakiyesi (KP).
+- Tamamlanan görev sayıları.
+- Credibility Score ve Rating sistemi.
+
+---
+
+## 💎 Son Yapılan Güncellemeler (Kritik)
+
+1. **İndigo Temalı İkinci El Modülü:** Ürün satışı için özel kategori ve renk paleti eklendi.
+2. **Fotoğraf Yükleme:** `multer` entegrasyonu ile ilanlara görsel ekleme özelliği getirildi.
+3. **Steel Blue Fintech Migration:** Tüm arayüz standart dışı renklerden temizlenip profesyonel bir fintech görünümüne kavuşturuldu.
+4. **Blur Backdrops:** Tüm modallardaki turuncu/amber arka planlar kaldırılarak modern `backdrop-blur-sm` efektiyle güncellendi.
+5. **Effective Reward Bug Fix:** İlan listesinde çarpanlı gözüken ama ödemede baz alınan miktar hatası (escrow tutarsızlığı) giderildi; artık ödeme sisteminde çarpanlı tutar (effective reward) tam olarak kullanılıyor.
+
+---
+
+## 📂 Dosya Yapısı
+
+- `/uniloop-backend`
+  - `/src/modules/task`: İlan yönetimi ve Escrow mantığı.
+  - `/src/modules/wallet`: Para transferleri ve bakiye yönetimi.
+  - `/src/middleware/upload.js`: Görsel yükleme motoru.
+- `/uniloop-frontend`
+  - `/src/components/TaskCard.jsx`: İlan kartları ve işlem onay modalları.
+  - `/src/pages/DashboardPage.jsx`: Ana akış ve filtreleme.
+  - `/src/pages/MessagesPage.jsx`: Sohbet arayüzü.
+
+---
+*UniLoop — Kampüsünüzün Ekonomik Döngüsü.*

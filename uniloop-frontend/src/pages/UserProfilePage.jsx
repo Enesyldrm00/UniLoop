@@ -28,6 +28,7 @@ const TYPE_CONFIG = {
   skill_exchange:  { emoji: '⚡', label: 'Yetenek',  color: 'text-brand-light   bg-brand/10   border-brand/20'   },
   courier_request: { emoji: '📦', label: 'Kurye',    color: 'text-blue-300      bg-blue-500/10 border-blue-500/20' },
   courier_offer:   { emoji: '🛵', label: 'Teklif',   color: 'text-amber-300     bg-amber-500/10 border-amber-500/20' },
+  second_hand:     { emoji: '🛍️', label: 'İkinci El', color: 'text-indigo-300    bg-indigo-500/10 border-indigo-500/20' },
 }
 
 function TaskBadge({ task }) {
@@ -75,7 +76,7 @@ function ReviewCard({ review }) {
     <div className="glass-card p-4 rounded-2xl space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+          <div className="w-7 h-7 rounded-xl bg-[#3b4b6e]/10 flex items-center justify-center flex-shrink-0">
             <User size={12} className="text-white/40" />
           </div>
           <span className="text-xs font-medium text-white/60">{review.reviewer_name}</span>
@@ -152,7 +153,7 @@ export default function UserProfilePage() {
       <div className="flex items-center gap-3 px-4 pt-12 pb-4">
         <button
           onClick={() => navigate(-1)}
-          className="w-9 h-9 glass-card flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
+          className="w-9 h-9 glass-card flex items-center justify-center hover:bg-[#3b4b6e]/10 transition-colors flex-shrink-0"
         >
           <ArrowLeft size={17} className="text-white/70" />
         </button>
@@ -204,7 +205,7 @@ export default function UserProfilePage() {
                 <span className="text-[10px] text-white/40 uppercase tracking-wider">Güvenilirlik Skoru</span>
                 <span className="text-xs font-bold text-brand-light">{profile.credibility_score}/100</span>
               </div>
-              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-[#3b4b6e]/10 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-brand-gradient rounded-full transition-all duration-700"
                   style={{ width: `${profile.credibility_score}%` }}
@@ -256,7 +257,7 @@ export default function UserProfilePage() {
                   href={`https://instagram.com/${contact.instagram_handle}`}
                   target="_blank" rel="noreferrer"
                   className="flex items-center gap-3 glass-card p-3.5 rounded-2xl
-                             hover:bg-white/5 transition-colors active:scale-[0.99]"
+                             hover:bg-[#3b4b6e]/5 transition-colors active:scale-[0.99]"
                 >
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-500 to-orange-400
                                   flex items-center justify-center flex-shrink-0">
@@ -274,7 +275,7 @@ export default function UserProfilePage() {
                   href={contact.linkedin_url}
                   target="_blank" rel="noreferrer"
                   className="flex items-center gap-3 glass-card p-3.5 rounded-2xl
-                             hover:bg-white/5 transition-colors active:scale-[0.99]"
+                             hover:bg-[#3b4b6e]/5 transition-colors active:scale-[0.99]"
                 >
                   <div className="w-9 h-9 rounded-xl bg-blue-600
                                   flex items-center justify-center flex-shrink-0">
@@ -291,7 +292,7 @@ export default function UserProfilePage() {
                 <a
                   href={`tel:${contact.phone_number}`}
                   className="flex items-center gap-3 glass-card p-3.5 rounded-2xl
-                             hover:bg-white/5 transition-colors active:scale-[0.99]"
+                             hover:bg-[#3b4b6e]/5 transition-colors active:scale-[0.99]"
                 >
                   <div className="w-9 h-9 rounded-xl bg-emerald-600
                                   flex items-center justify-center flex-shrink-0">
@@ -313,7 +314,7 @@ export default function UserProfilePage() {
           <button
             onClick={() => setShowTasks(v => !v)}
             className="w-full glass-card p-4 rounded-2xl flex items-center justify-between
-                       hover:bg-white/5 transition-colors active:scale-[0.99]"
+                       hover:bg-[#3b4b6e]/5 transition-colors active:scale-[0.99]"
           >
             <div className="flex items-center gap-2">
               <span className="text-sm">📋</span>

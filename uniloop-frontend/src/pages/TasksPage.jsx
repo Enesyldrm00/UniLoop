@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import {
   Plus, Filter, X, Loader, Search,
-  Zap, Package, Navigation, MapPin,
+  Zap, Package, Navigation, MapPin, Tag,
   ChevronDown, SlidersHorizontal,
 } from 'lucide-react'
 import api from '../api/axios'
 import TaskCard      from '../components/TaskCard'
 import Navbar        from '../components/Navbar'
 import { useToast } from '../components/Toast'
+import EventCard from '../components/EventCard'
+import CreateEventModal from '../components/CreateEventModal'
 
 // ── Sabitler ────────────────────────────────────────────────
 const LOCATIONS = [
@@ -22,6 +24,7 @@ const TASK_TYPES = [
   { value: 'skill_exchange',  label: '⚡ Yetenek Takası', icon: Zap       },
   { value: 'courier_request', label: '📦 Kurye Talebi',   icon: Package   },
   { value: 'courier_offer',   label: '🛵 Kurye Teklifi',  icon: Navigation },
+  { value: 'second_hand',     label: '🛍️ İkinci El',     icon: Tag       },
 ]
 
 // ── İlan Oluşturma Modalı (Multi-Step) ──────────────────────
@@ -65,6 +68,19 @@ const TASK_TYPE_DETAILS = [
     flowBg:   'bg-amber-500/10 border-amber-500/20',
     btnColor: 'bg-amber-500/20 border-amber-500/40 text-amber-300',
   },
+  {
+    value:    'second_hand',
+    emoji:    '🛍️',
+    label:    'İkinci El Eşya',
+    subtitle: 'Eşyalarını sat, KP kazan',
+    desc:     'Kitap, not, elektronik eşya gibi kullanmadığın eşyaları diğer öğrencilere sat.',
+    flow:     'Sen Kazanıyorsun',
+    flowDesc: 'Bu ürünü satın alan kişi KP öder, sen kazanırsın.',
+    flowIcon: '💰',
+    flowColor:'text-indigo-300',
+    flowBg:   'bg-indigo-500/10 border-indigo-500/20',
+    btnColor: 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300',
+  },
 ]
 
 function CreateTaskModal({ onClose, onCreated }) {
@@ -73,6 +89,7 @@ function CreateTaskModal({ onClose, onCreated }) {
     title: '', description: '', task_type: '', reward_kredi: '',
     location: '', from_location: '', to_location: '',
   })
+  const [imageFile, setImageFile] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState('')
 
@@ -84,14 +101,24 @@ function CreateTaskModal({ onClose, onCreated }) {
     setLoading(true)
     setError('')
     try {
-      await api.post('/tasks', {
-        title:         form.title,
-        description:   form.description   || undefined,
-        task_type:     form.task_type,
-        reward_kredi:  parseInt(form.reward_kredi, 10),
-        location:      isCourierOffer ? undefined : (form.location || undefined),
-        from_location: isCourierOffer ? form.from_location : undefined,
-        to_location:   isCourierOffer ? form.to_location   : undefined,
+      const formData = new FormData()
+      formData.append('title', form.title)
+      if (form.description) formData.append('description', form.description)
+      formData.append('task_type', form.task_type)
+      formData.append('reward_kredi', parseInt(form.reward_kredi, 10))
+      
+      if (!isCourierOffer && form.location) formData.append('location', form.location)
+      if (isCourierOffer) {
+        formData.append('from_location', form.from_location)
+        formData.append('to_location', form.to_location)
+      }
+      
+      if (imageFile) {
+        formData.append('image', imageFile)
+      }
+
+      await api.post('/tasks', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       })
       onCreated()
       onClose()
@@ -105,18 +132,18 @@ function CreateTaskModal({ onClose, onCreated }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-slate-900/30/60 backdrop-blur-sm" />
       <div
         className="relative w-full max-w-lg glass-card rounded-3xl p-6 pb-8 overflow-y-auto max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-5" />
+        <div className="w-10 h-1 bg-[#3b4b6e]/20 rounded-full mx-auto mb-5" />
 
         <div className="flex items-center gap-2 mb-6">
           {[1,2,3].map(s => (
-            <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-300 ${s <= step ? 'bg-brand' : 'bg-white/10'}`} />
+            <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-300 ${s <= step ? 'bg-brand' : 'bg-[#3b4b6e]/10'}`} />
           ))}
-          <button onClick={onClose} className="ml-2 w-8 h-8 glass-card flex items-center justify-center hover:bg-white/10 flex-shrink-0">
+          <button onClick={onClose} className="ml-2 w-8 h-8 glass-card flex items-center justify-center hover:bg-[#3b4b6e]/10 flex-shrink-0">
             <X size={15} className="text-white/50" />
           </button>
         </div>
@@ -249,6 +276,21 @@ function CreateTaskModal({ onClose, onCreated }) {
               </div>
             )}
 
+            {form.task_type === 'second_hand' && (
+              <div>
+                <label className="text-xs text-white/50 mb-1.5 block">Ürün Fotoğrafı (İsteğe bağlı)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files[0])}
+                  className="input-field text-sm py-2 px-3 bg-dark-card file:mr-4 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/20 file:text-indigo-300 hover:file:bg-indigo-500/30 transition-all cursor-pointer"
+                />
+                {imageFile && (
+                  <p className="text-[10px] text-emerald-400 mt-1">Seçilen dosya: {imageFile.name}</p>
+                )}
+              </div>
+            )}
+
             {error && <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl p-3">{error}</p>}
 
             <div className="flex gap-3 pt-1">
@@ -348,12 +390,12 @@ function FilterPanel({ filters, onChange, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-slate-900/30/60 backdrop-blur-sm" />
       <div
         className="relative w-full max-w-lg glass-card rounded-3xl p-6 pb-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-5" />
+        <div className="w-10 h-1 bg-[#3b4b6e]/20 rounded-full mx-auto mb-5" />
         <div className="flex items-center justify-between mb-5">
           <p className="text-base font-semibold">🔍 Filtrele</p>
           <button onClick={onClose} className="w-8 h-8 glass-card flex items-center justify-center">
@@ -427,17 +469,17 @@ function SkeletonCard() {
   return (
     <div className="glass-card p-4 space-y-3 animate-pulse">
       <div className="flex gap-2">
-        <div className="w-9 h-9 bg-white/10 rounded-xl" />
+        <div className="w-9 h-9 bg-[#3b4b6e]/10 rounded-xl" />
         <div className="flex-1 space-y-1.5">
-          <div className="h-3 bg-white/10 rounded w-1/2" />
-          <div className="h-2.5 bg-white/5 rounded w-1/3" />
+          <div className="h-3 bg-[#3b4b6e]/10 rounded w-1/2" />
+          <div className="h-2.5 bg-[#3b4b6e]/5 rounded w-1/3" />
         </div>
-        <div className="h-5 w-14 bg-white/10 rounded" />
+        <div className="h-5 w-14 bg-[#3b4b6e]/10 rounded" />
       </div>
-      <div className="h-3 bg-white/10 rounded w-3/4" />
-      <div className="h-2.5 bg-white/5 rounded" />
-      <div className="h-2.5 bg-white/5 rounded w-2/3" />
-      <div className="h-10 bg-white/5 rounded-xl" />
+      <div className="h-3 bg-[#3b4b6e]/10 rounded w-3/4" />
+      <div className="h-2.5 bg-[#3b4b6e]/5 rounded" />
+      <div className="h-2.5 bg-[#3b4b6e]/5 rounded w-2/3" />
+      <div className="h-10 bg-[#3b4b6e]/5 rounded-xl" />
     </div>
   )
 }
@@ -449,9 +491,12 @@ export default function TasksPage() {
   const [loading,        setLoading]        = useState(true)
   const [myId,           setMyId]           = useState(null)
   const [showCreate,     setShowCreate]     = useState(false)
+  const [showEventCreate,setShowEventCreate]= useState(false)
   const [showFilter,     setShowFilter]     = useState(false)
   const [filters,        setFilters]        = useState({ type: '', location: '' })
   const [searchText,     setSearchText]     = useState('')
+  const [activeTab,      setActiveTab]      = useState('tasks')
+  const [events,         setEvents]         = useState([])
 
   const fetchTasks = async (f = filters) => {
     setLoading(true)
@@ -468,9 +513,17 @@ export default function TasksPage() {
     }
   }
 
+  const fetchEvents = async () => {
+    try {
+      const res = await api.get('/events')
+      setEvents(res.data.events || [])
+    } catch (err) { }
+  }
+
   useEffect(() => {
     api.get('/wallet/me').then(res => setMyId(parseInt(res.data.user?.id, 10))).catch(() => {})
     fetchTasks()
+    fetchEvents()
   }, [])
 
   const handleFilterChange = (newFilters) => {
@@ -515,6 +568,13 @@ export default function TasksPage() {
     t.creator_name?.toLowerCase().includes(searchText.toLowerCase())
   )
 
+  const displayedEvents = events.filter(e =>
+    !searchText ||
+    e.title?.toLowerCase().includes(searchText.toLowerCase()) ||
+    e.description?.toLowerCase().includes(searchText.toLowerCase()) ||
+    e.creator_name?.toLowerCase().includes(searchText.toLowerCase())
+  )
+
   const activeFilterCount = [filters.type, filters.location].filter(Boolean).length
 
   return (
@@ -522,17 +582,38 @@ export default function TasksPage() {
       {/* Header */}
       <div className="px-4 pt-12 pb-4">
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-xl font-bold">İlanlar</h1>
-            <p className="text-xs text-white/40 mt-0.5">{displayed.length} ilan bulundu</p>
+          <div className="flex gap-4">
+            <button 
+              className={`text-xl font-bold transition-all ${activeTab === 'tasks' ? 'text-white' : 'text-white/40'}`}
+              onClick={() => setActiveTab('tasks')}
+            >
+              İlanlar
+            </button>
+            <button 
+              className={`text-xl font-bold transition-all ${activeTab === 'events' ? 'text-fuchsia-400' : 'text-white/40'}`}
+              onClick={() => setActiveTab('events')}
+            >
+              Etkinlikler
+            </button>
           </div>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="btn-primary flex items-center gap-1.5 px-4 py-2.5 text-sm"
-          >
-            <Plus size={16} />
-            <span>İlan Ver</span>
-          </button>
+          
+          {activeTab === 'tasks' ? (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="btn-primary flex items-center gap-1.5 px-4 py-2.5 text-sm"
+            >
+              <Plus size={16} />
+              <span>İlan Ver</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowEventCreate(true)}
+              className="btn-primary bg-fuchsia-600 hover:bg-fuchsia-500 border-fuchsia-500 shadow-fuchsia-500/20 flex items-center gap-1.5 px-4 py-2.5 text-sm"
+            >
+              <Plus size={16} />
+              <span>Etkinlik Oluştur</span>
+            </button>
+          )}
         </div>
 
         {/* Arama */}
@@ -555,49 +636,52 @@ export default function TasksPage() {
           )}
         </div>
 
-        {/* Filtre / Sıralama Çubuğu */}
-        <div className="flex items-center gap-2">
-          <div className="flex gap-2 flex-1 overflow-x-auto scroll-x-hidden pb-1">
-            {/* Tür filtreleri */}
-            <button
-              onClick={() => handleFilterChange({ ...filters, type: '' })}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all
-                ${!filters.type ? 'bg-brand/20 border-brand/40 text-brand-light' : 'glass-card text-white/40'}`}
-            >
-              Tümü
-            </button>
-            {TASK_TYPES.map(({ value, label }) => (
+        {/* Filtre / Sıralama Çubuğu (Sadece İlanlarda göster) */}
+        {activeTab === 'tasks' && (
+          <div className="flex items-center gap-2">
+            <div className="flex gap-2 flex-1 overflow-x-auto scroll-x-hidden pb-1">
+              {/* Tür filtreleri */}
               <button
-                key={value}
-                onClick={() => handleFilterChange({ ...filters, type: filters.type === value ? '' : value })}
+                onClick={() => handleFilterChange({ ...filters, type: '' })}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all
-                  ${filters.type === value ? 'bg-brand/20 border-brand/40 text-brand-light' : 'glass-card text-white/40'}`}
+                  ${!filters.type ? 'bg-brand/20 border-brand/40 text-brand-light' : 'glass-card text-white/40'}`}
               >
-                {label}
+                Tümü
               </button>
-            ))}
+              {TASK_TYPES.map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => handleFilterChange({ ...filters, type: filters.type === value ? '' : value })}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all
+                    ${filters.type === value ? 'bg-brand/20 border-brand/40 text-brand-light' : 'glass-card text-white/40'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {/* Gelişmiş filtre */}
+            <button
+              onClick={() => setShowFilter(true)}
+              className={`relative flex-shrink-0 w-9 h-9 glass-card flex items-center justify-center transition-colors
+                ${activeFilterCount > 0 ? 'border-brand/40 text-brand-light' : 'text-white/50'}`}
+            >
+              <SlidersHorizontal size={15} />
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand rounded-full text-[9px] flex items-center justify-center font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
           </div>
-          {/* Gelişmiş filtre */}
-          <button
-            onClick={() => setShowFilter(true)}
-            className={`relative flex-shrink-0 w-9 h-9 glass-card flex items-center justify-center transition-colors
-              ${activeFilterCount > 0 ? 'border-brand/40 text-brand-light' : 'text-white/50'}`}
-          >
-            <SlidersHorizontal size={15} />
-            {activeFilterCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand rounded-full text-[9px] flex items-center justify-center font-bold">
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
-        </div>
+        )}
       </div>
 
-      {/* İlan Listesi */}
+      {/* İlan / Etkinlik Listesi */}
       <div className="px-4 space-y-3">
-        {loading
-          ? [1,2,3,4].map(i => <SkeletonCard key={i} />)
-          : displayed.length === 0
+        {loading ? (
+          [1,2,3,4].map(i => <SkeletonCard key={i} />)
+        ) : activeTab === 'tasks' ? (
+          displayed.length === 0
             ? (
               <div className="text-center py-16">
                 <div className="text-5xl mb-3">📋</div>
@@ -623,7 +707,43 @@ export default function TasksPage() {
                 onAssign={handleTaskAssign}
               />
             ))
-        }
+        ) : (
+          displayedEvents.length === 0
+            ? (
+              <div className="text-center py-16">
+                <div className="text-5xl mb-3">🎪</div>
+                <p className="text-white/30 text-sm">
+                  {searchText
+                    ? 'Bu filtreye uyan etkinlik bulunamadı.'
+                    : 'Henüz hiç açık etkinlik yok.'}
+                </p>
+                <button
+                  onClick={() => setShowEventCreate(true)}
+                  className="btn-primary bg-fuchsia-600 hover:bg-fuchsia-500 border-fuchsia-500 shadow-fuchsia-500/20 mt-4 px-6 py-2.5 text-sm inline-flex items-center gap-2"
+                >
+                  <Plus size={14} />
+                  İlk Etkinliği Oluştur
+                </button>
+              </div>
+            )
+            : displayedEvents.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                currentUserId={myId}
+                onJoin={async (e) => {
+                  try {
+                    const res = await api.post(`/events/${e.id}/join`)
+                    toast.success(res.data.message)
+                    fetchEvents()
+                    window.dispatchEvent(new Event('wallet_update'))
+                  } catch (err) {
+                    toast.error(err.response?.data?.message || 'Katılım başarısız oldu.')
+                  }
+                }}
+              />
+            ))
+        )}
         <div className="h-4" />
       </div>
 
@@ -631,6 +751,16 @@ export default function TasksPage() {
         <CreateTaskModal
           onClose={() => setShowCreate(false)}
           onCreated={() => fetchTasks()}
+        />
+      )}
+
+      {showEventCreate && (
+        <CreateEventModal
+          onClose={() => setShowEventCreate(false)}
+          onCreated={() => {
+            fetchEvents()
+            window.dispatchEvent(new Event('wallet_update'))
+          }}
         />
       )}
 

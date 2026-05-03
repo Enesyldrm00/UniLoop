@@ -6,6 +6,7 @@ const {
   assignTask,
   createReview,
 } = require('./task.controller');
+const upload = require('../../middleware/upload');
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.get('/', getTasks);
 router.use(protect);
 
 // POST /api/tasks — Yeni ilan aç
-router.post('/', createTask);
+router.post('/', upload.single('image'), createTask);
 
 // PATCH /api/tasks/:id/assign — Görevi üstlen (escrow kilitler)
 router.patch('/:id/assign', assignTask);

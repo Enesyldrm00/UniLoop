@@ -21,15 +21,8 @@ export default function App() {
   // Layout için kullanıcı + bakiye çek
   useEffect(() => {
     if (!token) return
-    api.get('/wallet/me')
-      .then(res => {
-        setUser(res.data.user)
-        setWallet(res.data.wallet)
-      })
-      .catch(() => {})
 
-    // Sekmeye dönünce yenile
-    const onFocus = () => {
+    const fetchWallet = () => {
       api.get('/wallet/me')
         .then(res => {
           setUser(res.data.user)
@@ -37,8 +30,17 @@ export default function App() {
         })
         .catch(() => {})
     }
-    window.addEventListener('focus', onFocus)
-    return () => window.removeEventListener('focus', onFocus)
+
+    fetchWallet()
+
+    // Sekmeye dönünce veya manuel tetiklenince yenile
+    window.addEventListener('focus', fetchWallet)
+    window.addEventListener('wallet_update', fetchWallet)
+    
+    return () => {
+      window.removeEventListener('focus', fetchWallet)
+      window.removeEventListener('wallet_update', fetchWallet)
+    }
   }, [token])
 
   if (!token) {

@@ -22,23 +22,23 @@ export default function NotificationsPanel({
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
       {/* Arka plan overlay - hafif karartma */}
-      <div className="absolute inset-0 bg-slate-900/20" />
+      <div className="absolute inset-0 bg-amber-500/20" />
       <div
-        className="relative w-full max-w-sm h-full bg-white border-l border-slate-200 shadow-lg
+        className="relative w-full max-w-sm h-full bg-[#3b4b6e] border-l border-white/15 shadow-lg
                    overflow-y-auto animate-slide-right"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-14 pb-4 border-b border-slate-100">
+        <div className="flex items-center justify-between px-5 pt-14 pb-4 border-b border-white/10">
           <div>
-            <h2 className="text-base font-bold text-slate-900">Bildirimler</h2>
+            <h2 className="text-base font-bold text-white">Bildirimler</h2>
             <p className="text-xs text-slate-400 mt-0.5">
               {total > 0 ? `${total} bekleyen bildirim` : 'Bildirim yok'}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors"
+            className="w-8 h-8 rounded-lg border border-white/15 flex items-center justify-center hover:bg-white/5 transition-colors"
           >
             <X size={15} className="text-slate-400" />
           </button>
@@ -67,7 +67,7 @@ export default function NotificationsPanel({
                     />
                   ))}
                   {escrows.length > 0 && (
-                    <div className="border-t border-slate-100 pt-1" />
+                    <div className="border-t border-white/10 pt-1" />
                   )}
                 </>
               )}
@@ -76,7 +76,7 @@ export default function NotificationsPanel({
               {escrows.length > 0 && (
                 <>
                   {pendingReviews.length > 0 && (
-                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest px-1">
+                    <p className="text-[10px] font-semibold text-slate-300 uppercase tracking-widest px-1">
                       🔒 Onay Bekliyor
                     </p>
                   )}
@@ -103,7 +103,7 @@ function ReviewCard({ review, onSelect }) {
   return (
     <button
       onClick={() => onSelect(review)}
-      className="w-full text-left bg-white border border-amber-200 rounded-xl p-4
+      className="w-full text-left bg-[#3b4b6e] border border-amber-200 rounded-xl p-4
                  hover:bg-amber-50 hover:border-amber-300 hover:-translate-y-0.5 hover:shadow-sm
                  transition-all duration-200 active:scale-[0.98]"
     >
@@ -112,7 +112,7 @@ function ReviewCard({ review, onSelect }) {
           <Star size={18} className="text-amber-500" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-slate-900 line-clamp-1">{review.task_title}</p>
+          <p className="text-sm font-semibold text-white line-clamp-1">{review.task_title}</p>
           <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">
             Değerlendir: <span className="text-amber-600 font-medium">{review.reviewee_name}</span>
           </p>
@@ -140,7 +140,7 @@ function NotifCard({ escrow, currentUserId, onSelect }) {
   let statusColor = 'text-slate-400'
   if (escrow.status === 'released') {
     statusText  = '✅ Ödeme tamamlandı'
-    statusColor = 'text-emerald-600'
+    statusColor = 'text-teal-400'
   } else if (escrow.status === 'disputed') {
     statusText  = '⚠️ Anlaşmazlık bildirildi'
     statusColor = 'text-amber-600'
@@ -149,30 +149,30 @@ function NotifCard({ escrow, currentUserId, onSelect }) {
     statusColor = 'text-slate-400'
   } else if (isBuyer) {
     statusText  = '🔔 İlanınız üstlenildi — onayınız bekleniyor'
-    statusColor = 'text-slate-700'
+    statusColor = 'text-white/80'
   } else {
     statusText  = '🔔 Görevi teslim et ve onayla'
-    statusColor = 'text-slate-700'
+    statusColor = 'text-white/80'
   }
 
   return (
     <button
       onClick={() => onSelect(escrow)}
-      className={`w-full text-left bg-white rounded-xl p-4 border transition-all duration-200
+      className={`w-full text-left bg-[#3b4b6e] rounded-xl p-4 border transition-all duration-200
                   active:scale-[0.98] hover:-translate-y-0.5 hover:shadow-sm
                   ${needsMyAction
-                    ? 'border-slate-900/20 hover:border-slate-900/30 hover:bg-slate-50'
-                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    ? 'border-slate-900/20 hover:border-slate-900/30 hover:bg-white/5'
+                    : 'border-white/15 hover:border-slate-300 hover:bg-white/5'
                   }`}
     >
       <div className="flex items-start gap-3">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
-                         ${needsMyAction ? 'bg-slate-900' : 'bg-slate-100'}`}>
+                         ${needsMyAction ? 'bg-amber-500' : 'bg-white/10'}`}>
           <ShieldCheck size={18} className={needsMyAction ? 'text-white' : 'text-slate-400'} />
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-slate-900 line-clamp-1">{escrow.task_title}</p>
+          <p className="text-sm font-semibold text-white line-clamp-1">{escrow.task_title}</p>
           <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">
             {isBuyer
               ? `Görevi yapan: ${escrow.seller_name}`
@@ -182,9 +182,9 @@ function NotifCard({ escrow, currentUserId, onSelect }) {
         </div>
 
         <div className="flex-shrink-0 text-right">
-          <p className="text-sm font-bold text-emerald-600">{escrow.amount} KP</p>
+          <p className="text-sm font-bold text-teal-400">{escrow.amount} KP</p>
           {needsMyAction && (
-            <span className="inline-block mt-1 w-2 h-2 bg-slate-900 rounded-full animate-pulse" />
+            <span className="inline-block mt-1 w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
           )}
         </div>
       </div>
