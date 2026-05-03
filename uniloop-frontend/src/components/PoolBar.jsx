@@ -55,7 +55,10 @@ export default function PoolBar({ pool, onJoin }) {
     <div className="glass-card rounded-xl p-4 min-w-[220px] max-w-[220px] flex-shrink-0
                     transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-slate-300">
       {/* Başlık */}
-      <p className="text-sm font-semibold text-white leading-snug line-clamp-1 mb-1">
+      <p 
+        className="text-sm font-semibold text-white leading-snug line-clamp-1 mb-1"
+        title={curPool.title}
+      >
         {curPool.title}
       </p>
 
