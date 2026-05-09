@@ -168,6 +168,4 @@ Sistem, finansal işlemler (KP aktarımları, kilitlenmeler ve iadeler) içerdi�
 
 ---
 
-<div align="center">
-  <p><i>BTK Hackathon için özenle geliştirilmiştir. 👨‍💻🚀</i></p>
-</div>
+
